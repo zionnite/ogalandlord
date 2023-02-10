@@ -1401,6 +1401,7 @@ class Api extends My_Controller{
         // echo $start_price.br().$end_price;
         
         $msg    = array();
+         $dis_data   = array();
         $start = 0;
         $limit = 5;
 
@@ -1421,13 +1422,15 @@ class Api extends My_Controller{
             $query      =$this->db->get('favourite');
             if($query->num_rows() > 0){
                 foreach($query->result_array() as $low){
+                  
                     $fav_id              = $low['id'];
                     $fav_props_id        = $low['prop_id'];
 
                     $get_property        = $this->Property_db->get_props_by_id($fav_props_id);
                     if(is_array($get_property)){
+                        
 
-                        $dis_data   = array();
+                       
 
                         foreach($get_property as $row){
 
@@ -4946,7 +4949,7 @@ class Api extends My_Controller{
     }
 
 
-    public function get_dis_users($user_id=NULL){
+    public function get_dis_user($user_id=NULL){
        
         $msg    = array();
        
