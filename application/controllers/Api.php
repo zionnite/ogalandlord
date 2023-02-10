@@ -5033,4 +5033,146 @@ class Api extends My_Controller{
             
         
     }
+
+    public function update_profile($my_id = NULL){
+        $msg = array();
+
+        $full_name       = $this->input->post('full_name');
+        $email           = $this->input->post('email');
+        $phone_no        = $this->input->post('phone');
+        $age             = $this->input->post('age');
+        $gender          = $this->input->post('sex');
+        $address         = $this->input->post('address');
+        $bank_code                      =$this->input->post('bank_code');
+        $account_number                 =$this->input->post('account_number');
+        $account_name                   =$this->input->post('account_name');
+
+
+        if ($gender == 'false') {
+            $sex    = 'Female';
+        } else {
+            $sex    = 'Male';
+        }
+
+
+        $data   = array(
+            'user_img' => $profileImg,
+            'full_name' => $full_name,
+            'email'     => $email,
+            'phone_no' => $phone_no,
+            'age' => $age,
+            'sex' => $sex,
+            'address'   => $address,
+            'isbank_verify' => 'no',
+            // 'is_profile_updated' => "true",
+            //    'is_profile_set' => "set",
+
+        );
+        $this->db->set($data);
+        $this->db->where('user_id', $my_id);
+        $this->db->update('user_detail');
+        if ($this->db->affected_rows() > 0) {
+            //
+            $this->db->where('user_id', $my_id);
+
+            $query  = $this->db->get('user_detail');
+            if ($query->num_rows() > 0) {
+                foreach ($query->result_array() as $row) {
+                    $system_id              = $row['system_id'];
+                    $user_id                = $row['user_id'];
+                    $full_name              = $row['full_name'];
+                    $age                    = $row['age'];
+                    $sex                    = $row['sex'];
+                    $email                  = $row['email'];
+                    $phone_no               = $row['phone_no'];
+                    $user_img               = base_url() . 'user_img/images/' . $user_name . '/' . $row['user_img'];
+                    $user_name              = $row['user_name'];
+                    $isProfileUpdated       = $row['is_profile_updated'];
+                    // $isProfileUpdated       =$row['is_profile_set'];
+
+
+                    $msg      = array(
+                        'user_id' => $user_id,
+                        'full_name' => $full_name,
+                        'age' => $age,
+                        'sex' => $sex,
+                        'email' => $email,
+                        'phone_no' => $phone_no,
+                        'user_img' => $user_img,
+                        'status' => true,
+                        'status_msg' => 'Items retrieved',
+                        'user_name' => $user_name,
+                        'is_profile_updated' => $isProfileUpdated
+                    );
+                }
+            } else {
+                $msg  = array('status' => false);
+            }
+        } else {
+            $msg['status'] = false;
+        }
+        echo json_encode($msg);
+    }
+
+    public function verify_bank_account($bank_code=NULL, $account_number = NULL){
+
+		// $bank_code			=$this->input->post('bank_code');
+		// $account_number		= $this->input->post('account_number');
+		// echo $bank_code.br().$account_number;
+
+		$user_id		=$this->session->userdata('user_id');
+		$secure_key   =$this->Action->get_private_live_key();
+		$curl = curl_init();
+
+		$url	= "https://api.paystack.co/bank/resolve?account_number=$account_number&bank_code=$bank_code";
+  
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => $url,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => "",
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 30,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => "GET",
+			CURLOPT_HTTPHEADER => array(
+			"Authorization: Bearer $secure_key",
+			"Cache-Control: no-cache",
+			),
+		));
+		
+		$response = curl_exec($curl);
+		$result  = json_decode($response, true);
+        $result  = array_change_key_case($result, CASE_LOWER);
+
+		$err = curl_error($curl);
+		
+		curl_close($curl);
+		
+		if ($err) {
+			echo $err;
+		} else {
+
+			$v_status           = $result['status'];
+            
+
+			
+			if($v_status){
+				$v_data             = $result['data'];
+				$v_account_name		= $v_data['account_name'];
+				$v_account_number	= $v_data['account_number'];
+				$action		= $this->Users_db->update_bank_verify_status($user_id);
+				if($action){
+					echo 'ok';
+				}else{ 
+					echo 'database';
+				}
+			}else{
+				
+				echo 'Could not verify bank account detail, pls try updating your bank details and come try again';
+			}
+		}
+
+
+        
+	}
 }
