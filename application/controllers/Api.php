@@ -4919,27 +4919,115 @@ class Api extends My_Controller{
         return $check;
     }
 
+    public function report_property($id=NULL, $user_id=NULL, $type =NULL){
+
+        $checker    = $this->ApiAdmin_db->check_if_user_has_report($id,$user_id);
+        if(!$checker){
+
+            $data   = array('user_id'=>$user_id,'prop_id'=>$id,'type'=>$type,'date_created'=>date('Y-m-d H:i:s a'), 'time'=>time());
+            $this->db->set($data);
+            $this->db->insert('report_property');
+
+            if($this->db->affected_rows() > 0){
+
+                $msg['status']    = 'true';
+
+            }else{
+                
+
+                $msg['status']    = 'false';
+            }
+        }else{
+            $msg['status']        = 'false_2';
+        }
+
+        echo json_encode($msg);
+		
+    }
+
+
+    public function get_dis_users($user_id=NULL){
+       
+        $msg    = array();
+       
+
+        $msg    = array();
+
+        $this->db->order_by('id', 'asc');
+
+        $this->db->where('id', $user_id);
+
+        $query      =$this->db->get('users');
+        if($query->num_rows() > 0){
+
+            $dis_data   = array();
+            foreach($query->result_array() as $row){
+
+                $agent_id                   = $row['id'];
+                $agent_user_name            = $row['user_name'];
+                $agent_full_name            = $row['full_name'];
+                $agent_email                = $row['email'];
+                $agent_image_name           = $row['image_name'];
+                $agent_status               = $row['status'];
+                $agent_phone                = $row['phone'];
+                $agent_age                  = $row['age'];
+                $agent_sex                  = $row['sex'];
+                $agent_address              = $row['address'];
+                $agent_date_created         = $row['date_created'];
+                $agent_account_name         = $row['account_name'];
+                $agent_account_number       = $row['account_number'];
+                $agent_bank_name            = $row['bank_name'];
+                $agent_bank_code            = $row['bank_code'];
+                $agent_current_balance      = $row['current_balance'];
+                $agent_login_status         = $row['login_status'];
+
+                $agent_image_name           = base_url().'project_dir/users/'.$agent_user_name.'/images/'.$agent_image_name;
+
+
+                $agent_phone                = $this->Users_db->get_user_phone_by_id($agent_id);
+                $agent_prop_counter         = $this->Property_db->count_all_user_property($agent_id);
+
+
+                // $agent_email                =substr_replace($agent_email, 'XXXXXXXX', '5', '5');
+                // $agent_user_phone           =substr_replace($agent_phone, 'XXXXX', '3', '5');
+
+
+                $dis_data[]      = array(
+                    'agent_id'                                =>  $agent_id,
+                    'agent_user_name'                         =>  $agent_user_name,
+                    'agent_full_name'                         =>  $agent_full_name,
+                    'agent_email'                             =>  $agent_full_name,
+                    'agent_image_name'                        =>  $agent_image_name,
+                    'agent_status'                            =>  $agent_status,
+                    'agent_phone'                             =>  $agent_phone,
+                    'agent_age'                               =>  $agent_age,
+                    'agent_sex'                               =>  $agent_sex,
+                    'agent_address'                           =>  $agent_address,
+                    'agent_date_created'                      =>  $agent_date_created,
+                    'agent_account_name'                      =>  $agent_account_name,
+                    'agent_account_number'                    =>  $agent_account_number,
+                    'agent_bank_name'                         =>  $agent_bank_name,
+                    'agent_bank_code'                         =>  $agent_bank_code,
+                    'agent_current_balance'                   =>  $agent_current_balance,
+                    'agent_login_status'                      =>  $agent_login_status,
+                    'agent_phone'                             =>  $agent_phone,
+                    'agent_prop_counter'                      =>  $agent_prop_counter,
+
+                        
+                );
+            }
+
+            if (count($dis_data) != 0) {
+                $msg['status']      = 'success';
+                $msg['users']       = $dis_data;
+                echo json_encode($msg);
+            }
+        }
+        else {
+            $msg  = array('status' => 'end2');
+            echo json_encode($msg);
+        }
+            
+        
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1586,4 +1586,15 @@ class ApiAdmin_db extends My_Model{
         }
         return false;
     }
+
+    public function check_if_user_has_report($prod_id,$user_id){
+        $this->db->where('prop_id',$prod_id);
+        $this->db->where('user_id',$user_id);
+
+        $query      =$this->db->get('report_property');
+        if($query->num_rows() > 0){
+            return true;
+        }
+        return false;
+    }
 }
