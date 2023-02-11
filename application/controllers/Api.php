@@ -4358,6 +4358,7 @@ class Api extends My_Controller{
                     $agent_bank_code            = $row['bank_code'];
                     $agent_current_balance      = $row['current_balance'];
                     $agent_login_status         = $row['login_status'];
+                    $isbank_verify              = $row['isbank_verify'];
 
                     $agent_image_name           = base_url().'project_dir/users/'.$agent_user_name.'/images/'.$agent_image_name;
 
@@ -4390,6 +4391,7 @@ class Api extends My_Controller{
                         'agent_login_status'                      =>  $agent_login_status,
                         'agent_phone'                             =>  $agent_phone,
                         'agent_prop_counter'                      =>  $agent_prop_counter,
+                        'isbank_verify'                           =>  $isbank_verify,
 
                         
                     );
@@ -4454,6 +4456,7 @@ class Api extends My_Controller{
                     $agent_bank_code            = $row['bank_code'];
                     $agent_current_balance      = $row['current_balance'];
                     $agent_login_status         = $row['login_status'];
+                    $isbank_verify              = $row['isbank_verify'];
 
                     $agent_image_name           = base_url().'project_dir/users/'.$agent_user_name.'/images/'.$agent_image_name;
 
@@ -4486,6 +4489,7 @@ class Api extends My_Controller{
                         'agent_login_status'                      =>  $agent_login_status,
                         'agent_phone'                             =>  $agent_phone,
                         'agent_prop_counter'                      =>  $agent_prop_counter,
+                        'isbank_verify'                           =>  $isbank_verify,
 
                         
                     );
@@ -4695,6 +4699,7 @@ class Api extends My_Controller{
                                 $agent_bank_code            = $row['bank_code'];
                                 $agent_current_balance      = $row['current_balance'];
                                 $agent_login_status         = $row['login_status'];
+                                $isbank_verify              = $row['isbank_verify'];
 
                                 $agent_image_name           = base_url().'project_dir/users/'.$agent_user_name.'/images/'.$agent_image_name;
 
@@ -4730,6 +4735,7 @@ class Api extends My_Controller{
                                     'agent_login_status'                      =>  $agent_login_status,
                                     'agent_prop_counter'                      =>  "$agent_prop_counter",
                                     'admin_status'                            =>  $admin_status,
+                                    'isbank_verify'                           =>  $isbank_verify,
                                     'status'                                  =>  'success',
 
                                 );
@@ -4787,6 +4793,7 @@ class Api extends My_Controller{
                     $agent_bank_code            = $row['bank_code'];
                     $agent_current_balance      = $row['current_balance'];
                     $agent_login_status         = $row['login_status'];
+                    $isbank_verify              = $row['isbank_verify'];
 
                     $agent_image_name           = base_url().'project_dir/users/'.$agent_user_name.'/images/'.$agent_image_name;
 
@@ -4822,6 +4829,7 @@ class Api extends My_Controller{
                         'agent_login_status'                      =>  $agent_login_status,
                         'agent_prop_counter'                      =>  "$agent_prop_counter",
                         'admin_status'                            =>  $admin_status,
+                        'isbank_verify'                           =>  $isbank_verify,
                         'status'                                  =>  'success',
                     );
 
@@ -5062,6 +5070,7 @@ class Api extends My_Controller{
 
     public function update_profile($my_id = NULL){
         $msg = array();
+        $dis_data = array();
 
         $full_name       = $this->input->post('full_name');
         $email           = $this->input->post('email');
@@ -5069,10 +5078,7 @@ class Api extends My_Controller{
         $age             = $this->input->post('age');
         $gender          = $this->input->post('sex');
         $address         = $this->input->post('address');
-        $bank_code                      =$this->input->post('bank_code');
-        $account_number                 =$this->input->post('account_number');
-        $account_name                   =$this->input->post('account_name');
-
+        
 
         if ($gender == 'false') {
             $sex    = 'Female';
@@ -5080,74 +5086,195 @@ class Api extends My_Controller{
             $sex    = 'Male';
         }
 
-        $bank_name  = $this->Bank_db->get_bank_name_by_bank_code($bank_code);
-
-        $data       = array('bank_code' =>$bank_code,
-                            'bank_name'=>$bank_name,
-                            'account_number'=>$account_number,
-                            'account_name'=>$account_name,
-                            'isbank_verify'=>'no'
-                        );
+       
 
         $data   = array(
             'full_name' => $full_name,
             'email'     => $email,
-            'phone_no' => $phone_no,
+            'phone' => $phone_no,
             'age' => $age,
             'sex' => $sex,
             'address'   => $address,
+            'isbank_verify' => 'no',
+           
+
+        );
+        $this->db->set($data);
+        $this->db->where('id', $my_id);
+        $this->db->update('users');
+        if ($this->db->affected_rows() > 0) {
+            //
+            $this->db->where('id', $my_id);
+
+            $query  = $this->db->get('users');
+            if ($query->num_rows() > 0) {
+                foreach($query->result_array() as $row){
+                                $agent_id                   = $row['id'];
+                                $agent_user_name            = $row['user_name'];
+                                $agent_full_name            = $row['full_name'];
+                                $agent_email                = $row['email'];
+                                $agent_image_name           = $row['image_name'];
+                                $agent_status               = $row['status'];
+                                $agent_phone                = $row['phone'];
+                                $agent_age                  = $row['age'];
+                                $agent_sex                  = $row['sex'];
+                                $agent_address              = $row['address'];
+                                $agent_date_created         = $row['date_created'];
+                                $agent_account_name         = $row['account_name'];
+                                $agent_account_number       = $row['account_number'];
+                                $agent_bank_name            = $row['bank_name'];
+                                $agent_bank_code            = $row['bank_code'];
+                                $agent_current_balance      = $row['current_balance'];
+                                $agent_login_status         = $row['login_status'];
+                                $isbank_verify              = $row['isbank_verify'];
+
+                                $agent_image_name           = base_url().'project_dir/users/'.$agent_user_name.'/images/'.$agent_image_name;
+
+
+                                $agent_phone                = $this->Users_db->get_user_phone_by_id($agent_id);
+                                $agent_prop_counter         = $this->Property_db->count_all_user_property($agent_id);
+
+
+                                if($agent_status == 'admin' || $agent_status =='super_admin'){
+                                    $admin_status   = true;
+                                }else{
+                                    $admin_status   = false;
+                                }
+
+
+                                $msg      = array(
+                                    'agent_id'                                =>  $agent_id,
+                                    'agent_user_name'                         =>  $agent_user_name,
+                                    'agent_full_name'                         =>  $agent_full_name,
+                                    'agent_email'                             =>  $agent_full_name,
+                                    'agent_image_name'                        =>  $agent_image_name,
+                                    'agent_status'                            =>  $agent_status,
+                                    'agent_phone'                             =>  $agent_phone,
+                                    'agent_age'                               =>  $agent_age,
+                                    'agent_sex'                               =>  $agent_sex,
+                                    'agent_address'                           =>  $agent_address,
+                                    'agent_date_created'                      =>  $agent_date_created,
+                                    'agent_account_name'                      =>  $agent_account_name,
+                                    'agent_account_number'                    =>  $agent_account_number,
+                                    'agent_bank_name'                         =>  $agent_bank_name,
+                                    'agent_bank_code'                         =>  $agent_bank_code,
+                                    'agent_current_balance'                   =>  $agent_current_balance,
+                                    'agent_login_status'                      =>  $agent_login_status,
+                                    'agent_prop_counter'                      =>  "$agent_prop_counter",
+                                    'admin_status'                            =>  $admin_status,
+                                    'isbank_verify'                           =>  $isbank_verify,
+                                    'status'                                  =>  'success',
+
+                                );
+
+                            }
+            } else {
+                $msg['status']  = "false_2";
+            }
+        } else {
+            $msg['status'] = "false_1";
+        }
+        echo json_encode($msg);
+    }
+
+    public function update_bank_detail($my_id = NULL){
+        $msg = array();
+        $dis_data = array();
+
+
+        $bank_code                      =$this->input->post('bank_code');
+        $account_number                 =$this->input->post('account_number');
+        $account_name                   =$this->input->post('account_name');
+
+
+        
+        $bank_name  = $this->Bank_db->get_bank_name_by_bank_code($bank_code);
+
+
+        $data   = array(
+           
 
             'bank_code' =>$bank_code,
             'bank_name'=>$bank_name,
             'account_number'=>$account_number,
             'account_name'=>$account_name,
             'isbank_verify' => 'no',
-            // 'is_profile_updated' => "true",
-            //    'is_profile_set' => "set",
-
+           
         );
         $this->db->set($data);
-        $this->db->where('user_id', $my_id);
-        $this->db->update('user_detail');
+        $this->db->where('id', $my_id);
+        $this->db->update('users');
         if ($this->db->affected_rows() > 0) {
             //
-            $this->db->where('user_id', $my_id);
+            $this->db->where('id', $my_id);
 
-            $query  = $this->db->get('user_detail');
+            $query  = $this->db->get('users');
             if ($query->num_rows() > 0) {
-                foreach ($query->result_array() as $row) {
-                    $system_id              = $row['system_id'];
-                    $user_id                = $row['user_id'];
-                    $full_name              = $row['full_name'];
-                    $age                    = $row['age'];
-                    $sex                    = $row['sex'];
-                    $email                  = $row['email'];
-                    $phone_no               = $row['phone_no'];
-                    $user_img               = base_url() . 'user_img/images/' . $user_name . '/' . $row['user_img'];
-                    $user_name              = $row['user_name'];
-                    $isProfileUpdated       = $row['is_profile_updated'];
-                    // $isProfileUpdated       =$row['is_profile_set'];
+                foreach($query->result_array() as $row){
+                                $agent_id                   = $row['id'];
+                                $agent_user_name            = $row['user_name'];
+                                $agent_full_name            = $row['full_name'];
+                                $agent_email                = $row['email'];
+                                $agent_image_name           = $row['image_name'];
+                                $agent_status               = $row['status'];
+                                $agent_phone                = $row['phone'];
+                                $agent_age                  = $row['age'];
+                                $agent_sex                  = $row['sex'];
+                                $agent_address              = $row['address'];
+                                $agent_date_created         = $row['date_created'];
+                                $agent_account_name         = $row['account_name'];
+                                $agent_account_number       = $row['account_number'];
+                                $agent_bank_name            = $row['bank_name'];
+                                $agent_bank_code            = $row['bank_code'];
+                                $agent_current_balance      = $row['current_balance'];
+                                $agent_login_status         = $row['login_status'];
+                                $isbank_verify              = $row['isbank_verify'];
+
+                                $agent_image_name           = base_url().'project_dir/users/'.$agent_user_name.'/images/'.$agent_image_name;
 
 
-                    $msg      = array(
-                        'user_id' => $user_id,
-                        'full_name' => $full_name,
-                        'age' => $age,
-                        'sex' => $sex,
-                        'email' => $email,
-                        'phone_no' => $phone_no,
-                        'user_img' => $user_img,
-                        'status' => true,
-                        'status_msg' => 'Items retrieved',
-                        'user_name' => $user_name,
-                        'is_profile_updated' => $isProfileUpdated
-                    );
-                }
+                                $agent_phone                = $this->Users_db->get_user_phone_by_id($agent_id);
+                                $agent_prop_counter         = $this->Property_db->count_all_user_property($agent_id);
+
+
+                                if($agent_status == 'admin' || $agent_status =='super_admin'){
+                                    $admin_status   = true;
+                                }else{
+                                    $admin_status   = false;
+                                }
+
+
+                                $msg      = array(
+                                    'agent_id'                                =>  $agent_id,
+                                    'agent_user_name'                         =>  $agent_user_name,
+                                    'agent_full_name'                         =>  $agent_full_name,
+                                    'agent_email'                             =>  $agent_full_name,
+                                    'agent_image_name'                        =>  $agent_image_name,
+                                    'agent_status'                            =>  $agent_status,
+                                    'agent_phone'                             =>  $agent_phone,
+                                    'agent_age'                               =>  $agent_age,
+                                    'agent_sex'                               =>  $agent_sex,
+                                    'agent_address'                           =>  $agent_address,
+                                    'agent_date_created'                      =>  $agent_date_created,
+                                    'agent_account_name'                      =>  $agent_account_name,
+                                    'agent_account_number'                    =>  $agent_account_number,
+                                    'agent_bank_name'                         =>  $agent_bank_name,
+                                    'agent_bank_code'                         =>  $agent_bank_code,
+                                    'agent_current_balance'                   =>  $agent_current_balance,
+                                    'agent_login_status'                      =>  $agent_login_status,
+                                    'agent_prop_counter'                      =>  "$agent_prop_counter",
+                                    'admin_status'                            =>  $admin_status,
+                                    'isbank_verify'                           =>  $isbank_verify,
+                                    'status'                                  =>  'success',
+
+                                );
+
+                            }
             } else {
-                $msg  = array('status' => false);
+                $msg['status']  = "false_2";
             }
         } else {
-            $msg['status'] = false;
+            $msg['status'] = "false_1";
         }
         echo json_encode($msg);
     }
