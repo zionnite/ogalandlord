@@ -5034,6 +5034,32 @@ class Api extends My_Controller{
         
     }
 
+    //updates
+
+     
+    public function get_bank_list(){
+        $msg    =array();
+       
+        $query      =$this->db->get('list_bank');
+
+        $data       = array();
+        if($query->num_rows() > 0){
+            $data    = $query->result_array();
+        }
+        
+            
+        if (count($data) != 0) {
+
+            $msg['status']  = true;
+            $msg['list']  = $data;
+        }
+
+        else {
+            $msg['status']      = false;
+        }
+        echo json_encode($msg);
+    }
+
     public function update_profile($my_id = NULL){
         $msg = array();
 
@@ -5054,15 +5080,27 @@ class Api extends My_Controller{
             $sex    = 'Male';
         }
 
+        $bank_name  = $this->Bank_db->get_bank_name_by_bank_code($bank_code);
+
+        $data       = array('bank_code' =>$bank_code,
+                            'bank_name'=>$bank_name,
+                            'account_number'=>$account_number,
+                            'account_name'=>$account_name,
+                            'isbank_verify'=>'no'
+                        );
 
         $data   = array(
-            'user_img' => $profileImg,
             'full_name' => $full_name,
             'email'     => $email,
             'phone_no' => $phone_no,
             'age' => $age,
             'sex' => $sex,
             'address'   => $address,
+
+            'bank_code' =>$bank_code,
+            'bank_name'=>$bank_name,
+            'account_number'=>$account_number,
+            'account_name'=>$account_name,
             'isbank_verify' => 'no',
             // 'is_profile_updated' => "true",
             //    'is_profile_set' => "set",
@@ -5115,10 +5153,7 @@ class Api extends My_Controller{
     }
 
     public function verify_bank_account($bank_code=NULL, $account_number = NULL){
-
-		// $bank_code			=$this->input->post('bank_code');
-		// $account_number		= $this->input->post('account_number');
-		// echo $bank_code.br().$account_number;
+        $msg    = array();
 
 		$user_id		=$this->session->userdata('user_id');
 		$secure_key   =$this->Action->get_private_live_key();
@@ -5162,17 +5197,55 @@ class Api extends My_Controller{
 				$v_account_number	= $v_data['account_number'];
 				$action		= $this->Users_db->update_bank_verify_status($user_id);
 				if($action){
-					echo 'ok';
+					echo 'true';
 				}else{ 
-					echo 'database';
+					echo 'false';
 				}
 			}else{
 				
-				echo 'Could not verify bank account detail, pls try updating your bank details and come try again';
+				// echo 'Could not verify bank account detail, pls try updating your bank details and come try again';
+                $msg['status']  = "false_2";
 			}
 		}
 
-
-        
+        echo json_encode($msg);
 	}
+
+    public function update_profile_image($user_id = NULL){
+        $msg = array();
+
+        $propsId                     = $this->input->post('propsId');
+        
+        
+
+       
+        $user_name          = $this->Users_db->get_user_name_by_id($my_id);
+        @mkdir('project_dir');
+		@mkdir('project_dir/users');
+		@mkdir('project_dir/users/'.$user_name);
+		@mkdir('project_dir/users/'.$user_name.'/images');
+
+
+        $property_image         = $_FILES['property_image']['name'];
+        $propertyImgPath        = 'project_dir/users/'.$user_name.'/images' . $property_image;
+        $propertyTmp            = $_FILES['property_image']['tmp_name'];
+        move_uploaded_file($propertyTmp, $propertyImgPath);
+
+
+        $data   = array('image_name'=>$property_image);
+        $this->db->set($data);
+        $this->db->where('id',$my_id);
+        $this->db->update('users');
+
+        if($this->db->affected_rows() > 0){          
+
+            $property_image       =base_url().'project_dir/users/'.$user_name.'/images/'.$property_image;
+
+            $msg['status']        = true;
+            $msg['image_name']    = $property_image;
+        }else{
+            $msg['status']    = false;
+        }
+        echo json_encode($msg);
+    }
 }
