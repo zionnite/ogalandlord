@@ -5059,7 +5059,7 @@ class Api extends My_Controller{
         if (count($data) != 0) {
 
             $msg['status']  = true;
-            $msg['list']  = $data;
+            $msg['bank_list']  = $data;
         }
 
         else {
@@ -5183,16 +5183,14 @@ class Api extends My_Controller{
 
 
         $bank_code                      =$this->input->post('bank_code');
-        $account_number                 =$this->input->post('account_number');
+        $account_number                 =$this->input->post('account_num');
         $account_name                   =$this->input->post('account_name');
 
 
         
         $bank_name  = $this->Bank_db->get_bank_name_by_bank_code($bank_code);
 
-
         $data   = array(
-           
 
             'bank_code' =>$bank_code,
             'bank_name'=>$bank_name,
@@ -5279,10 +5277,9 @@ class Api extends My_Controller{
         echo json_encode($msg);
     }
 
-    public function verify_bank_account($bank_code=NULL, $account_number = NULL){
+    public function verify_bank_account($user_id=NULL, $bank_code=NULL, $account_number = NULL){
         $msg    = array();
 
-		$user_id		=$this->session->userdata('user_id');
 		$secure_key   =$this->Action->get_private_live_key();
 		$curl = curl_init();
 
@@ -5324,9 +5321,9 @@ class Api extends My_Controller{
 				$v_account_number	= $v_data['account_number'];
 				$action		= $this->Users_db->update_bank_verify_status($user_id);
 				if($action){
-					echo 'true';
+					$msg['status']  = 'true';
 				}else{ 
-					echo 'false';
+					$msg['status']  = 'false';
 				}
 			}else{
 				
@@ -5338,14 +5335,9 @@ class Api extends My_Controller{
         echo json_encode($msg);
 	}
 
-    public function update_profile_image($user_id = NULL){
-        $msg = array();
-
-        $propsId                     = $this->input->post('propsId');
+    public function update_profile_image($my_id = NULL){
+        $msg = array();        
         
-        
-
-       
         $user_name          = $this->Users_db->get_user_name_by_id($my_id);
         @mkdir('project_dir');
 		@mkdir('project_dir/users');
@@ -5354,8 +5346,9 @@ class Api extends My_Controller{
 
 
         $property_image         = $_FILES['property_image']['name'];
-        $propertyImgPath        = 'project_dir/users/'.$user_name.'/images' . $property_image;
+        $propertyImgPath        = 'project_dir/users/'.$user_name.'/images/' . $property_image;
         $propertyTmp            = $_FILES['property_image']['tmp_name'];
+        
         move_uploaded_file($propertyTmp, $propertyImgPath);
 
 
