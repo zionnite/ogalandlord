@@ -5375,7 +5375,7 @@ class Api extends My_Controller{
         $data   = array();
 
 
-        if($user_status     ='user'){
+        if($user_status     =='user'){
             $total_earning			= $this->Users_db->get_user_total_earning($user_id);
 	        $wallet_balance			= $this->Users_db->get_user_current_balance($user_id);
             $count_trans			= $this->Transaction_db->count_transaction($user_id);
@@ -5397,6 +5397,7 @@ class Api extends My_Controller{
         }else if($user_status == 'agent'  || $user_status == 'landlord'){
             $total_earning			= $this->Users_db->get_user_total_earning($user_id);
 	        $wallet_balance			= $this->Users_db->get_user_current_balance($user_id);
+            $count_trans			= $this->Transaction_db->count_transaction($user_id);
             $count_conn				= $this->Connection_db->count_connection_by_user_id($user_id);
             $count_props			= $this->Admin_db->count_props($user_id);
             $count_request			= $this->Request_db->count_request_by_user_id_2($user_id,$admin_status);
@@ -5406,17 +5407,17 @@ class Api extends My_Controller{
 
 
             
-            $data['total_earning']           = $total_earning;
-            $data['wallet_balance']          = $wallet_balance;
-            $data['insurance_earning']       = 0;
-            $data['total_transaction']       = $count_trans;
-            $data['total_connection']        = $count_conn;
-            $data['total_property']          = $count_props;
-            $data['total_request']           = $count_request;
-            $data['count_msg']               = $count_msg;
-            $data['count_alert']             = $count_alert();
+            $data['total_earning']           = "$total_earning";
+            $data['wallet_balance']          = "$wallet_balance";
+            $data['insurance_earning']       = "0";
+            $data['total_transaction']       = "$count_trans";
+            $data['total_connection']        = "$count_conn";
+            $data['total_property']          = "$count_props";
+            $data['total_request']           = "$count_request";
+            $data['count_msg']               = "$count_msg";
+            $data['count_alert']             = "$count_alert";
 
-        }else if($user_status   ='admin' || $user_status =='super_admin'){
+        }else if($user_status   =='admin' || $user_status =='super_admin'){
             $total_earning			= $this->Action->get_site_total_earning();
             $insurance_earning		= $this->Action->get_insurance_total_earning();
             $count_trans			= $this->Transaction_db->count_all_transaction();
@@ -5427,15 +5428,15 @@ class Api extends My_Controller{
 
 
             
-            $data['total_earning']           = $total_earning;
-            $data['wallet_balance']          = 0;
-            $data['insurance_earning']       = $insurance_earning;
-            $data['total_transaction']       = $count_trans;
-            $data['total_connection']        = $count_conn;
-            $data['total_property']          = $count_props;
-            $data['total_request']           = $count_request;
-            $data['count_msg']               = 0;
-            $data['count_alert']             = $count_alert();
+            $data['total_earning']           = "$total_earning";
+            $data['wallet_balance']          = "0";
+            $data['insurance_earning']       = "$insurance_earning";
+            $data['total_transaction']       = "$count_trans";
+            $data['total_connection']        = "$count_conn";
+            $data['total_property']          = "$count_props";
+            $data['total_request']           = "$count_request";
+            $data['count_msg']               = "0";
+            $data['count_alert']             = "$count_alert";
 
 
            
