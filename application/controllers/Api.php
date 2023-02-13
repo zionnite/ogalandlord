@@ -4804,6 +4804,7 @@ class Api extends My_Controller{
 
                     if($agent_status == 'admin' || $agent_status =='super_admin'){
                         $admin_status   = true;
+                        $isbank_verify  = 'yes';
                     }else{
                         $admin_status   = false;
                     }
@@ -5366,6 +5367,82 @@ class Api extends My_Controller{
         }else{
             $msg['status']    = false;
         }
+        echo json_encode($msg);
+    }
+
+    public function count_dashboard($user_id =NULL, $admin_status =NULL, $user_status =NULL){
+        $msg    =array();
+        $data   = array();
+
+
+        if($user_status     ='user'){
+            $total_earning			= $this->Users_db->get_user_total_earning($user_id);
+	        $wallet_balance			= $this->Users_db->get_user_current_balance($user_id);
+            $count_trans			= $this->Transaction_db->count_transaction($user_id);
+            $count_conn				= $this->Connection_db->count_connection_by_user_id($user_id);
+            $count_request			= $this->Request_db->count_request_by_user_id_2($user_id,$admin_status);
+            $count_msg				= $this->Chat_db->count_unread_message($user_id);
+            $count_alert 			= $this->Alert_db->count_my_alert($user_id);
+
+            $data['total_earning']           = "$total_earning";
+            $data['wallet_balance']          = "$wallet_balance";
+            $data['insurance_earning']       = "0";
+            $data['total_transaction']       = "$count_trans";
+            $data['total_connection']        = "$count_conn";
+            $data['total_property']          = "0";
+            $data['total_request']           = "$count_request";
+            $data['count_msg']               = "$count_msg";
+            $data['count_alert']             = "$count_alert";
+
+        }else if($user_status == 'agent'  || $user_status == 'landlord'){
+            $total_earning			= $this->Users_db->get_user_total_earning($user_id);
+	        $wallet_balance			= $this->Users_db->get_user_current_balance($user_id);
+            $count_conn				= $this->Connection_db->count_connection_by_user_id($user_id);
+            $count_props			= $this->Admin_db->count_props($user_id);
+            $count_request			= $this->Request_db->count_request_by_user_id_2($user_id,$admin_status);
+            $count_msg				= $this->Chat_db->count_unread_message($user_id);
+            $count_alert 			= $this->Alert_db->count_my_alert($user_id);
+            
+
+
+            
+            $data['total_earning']           = $total_earning;
+            $data['wallet_balance']          = $wallet_balance;
+            $data['insurance_earning']       = 0;
+            $data['total_transaction']       = $count_trans;
+            $data['total_connection']        = $count_conn;
+            $data['total_property']          = $count_props;
+            $data['total_request']           = $count_request;
+            $data['count_msg']               = $count_msg;
+            $data['count_alert']             = $count_alert();
+
+        }else if($user_status   ='admin' || $user_status =='super_admin'){
+            $total_earning			= $this->Action->get_site_total_earning();
+            $insurance_earning		= $this->Action->get_insurance_total_earning();
+            $count_trans			= $this->Transaction_db->count_all_transaction();
+            $count_conn				= $this->Connection_db->count_all_connection();
+            $count_props			= $this->Admin_db->count_all_props();
+            $count_request			= $this->Request_db->count_request_by_user_id_2($user_id,$admin_status);
+            $count_alert 			= $this->Alert_db->count_my_alert($user_id);
+
+
+            
+            $data['total_earning']           = $total_earning;
+            $data['wallet_balance']          = 0;
+            $data['insurance_earning']       = $insurance_earning;
+            $data['total_transaction']       = $count_trans;
+            $data['total_connection']        = $count_conn;
+            $data['total_property']          = $count_props;
+            $data['total_request']           = $count_request;
+            $data['count_msg']               = 0;
+            $data['count_alert']             = $count_alert();
+
+
+           
+
+        }
+        
+        $msg[]    = $data;
         echo json_encode($msg);
     }
 }
