@@ -1667,6 +1667,7 @@ class Api extends My_Controller{
         $limit = 5;
 
         $total    = $this->Request_db->count_request_by_user_id_2($user_id,$admin_status);
+        // $total    = 0;
         if ($page > $total) {
             $msg  = array('status' => 'end');
             echo json_encode($msg);
@@ -1852,7 +1853,7 @@ class Api extends My_Controller{
        
         $msg    = array();
         $start = 0;
-        $limit = 5;
+        $limit = 50;
 
         $total    = $this->Connection_db->count_connection_by_user_id($user_id);
         if ($page > $total) {
@@ -2050,6 +2051,7 @@ class Api extends My_Controller{
         $limit = 20;
 
         $total    = $this->Alert_db->count_my_alert($user_id);
+        // $total    = 0;
         if ($page > $total) {
             $msg  = array('status' => 'end');
             echo json_encode($msg);
@@ -2197,7 +2199,7 @@ class Api extends My_Controller{
        
         $msg    = array();
         $start = 0;
-        $limit = 5;
+        $limit = 50;
 
         $total    = $this->Chat_db->count_chat_head($user_id);
         if ($page > $total) {
