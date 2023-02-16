@@ -2047,7 +2047,7 @@ class Api extends My_Controller{
        
         $msg    = array();
         $start = 0;
-        $limit = 5;
+        $limit = 20;
 
         $total    = $this->Alert_db->count_my_alert($user_id);
         if ($page > $total) {
@@ -2177,12 +2177,20 @@ class Api extends My_Controller{
     }
 
 
-   public function count_dis_unread_message($id){
-        $this->db->where('id',$id);
+   public function count_dis_unread_message($id,$my_id,$dis_user_id){
+        // $this->db->where('id',$id);
+        $this->db->where('reciever',$my_id);
+        $this->db->where('sender',$dis_user_id);
         $this->db->where('reciever_status','unread');
 
         return $this->db->from('chat_box')->count_all_results();
    }
+
+    public function count_message_id($id){
+        $this->db->where('id',$id);
+        return $this->db->from('chat_box')->count_all_results();
+   }
+    
     
 
     public function get_message_head($page = NULL, $user_id = NULL){
@@ -2234,7 +2242,7 @@ class Api extends My_Controller{
                     $msg_id                          =$this->get_msg_id($user_id);
                     $last_unread_msg                 =$this->get_last_chat_msg_limit_by_1($dis_user_id,$dis_my_id);
                     $last_time_msg                   =$this->get_last_chat_time_limit_by_1($user_id);
-                    $count_unread_msg                =$this->count_dis_unread_message($msg_id);
+                    $count_unread_msg                =$this->count_dis_unread_message($msg_id,$dis_my_id,$dis_user_id);
 
 
 
@@ -4814,7 +4822,7 @@ class Api extends My_Controller{
                         'agent_id'                                =>  $agent_id,
                         'agent_user_name'                         =>  $agent_user_name,
                         'agent_full_name'                         =>  $agent_full_name,
-                        'agent_email'                             =>  $agent_full_name,
+                        'agent_email'                             =>  $agent_email,
                         'agent_image_name'                        =>  $agent_image_name,
                         'agent_status'                            =>  $agent_status,
                         'agent_phone'                             =>  $agent_phone,
@@ -5444,6 +5452,22 @@ class Api extends My_Controller{
         }
         
         $msg[]    = $data;
+        echo json_encode($msg);
+    }
+
+
+    public function count_alert($user_id =NULL){
+        $msg    =array();
+        $count_alert 			= $this->Alert_db->count_my_alert($user_id);
+        $msg['count_alert']             = $count_alert;
+        echo json_encode($msg);
+    }
+
+
+    public function count_msg($user_id =NULL){
+        $msg    =array();
+        $count_msg				= $this->Chat_db->count_unread_message($user_id);
+        $msg['count_msg']       = $count_msg;
         echo json_encode($msg);
     }
 }
