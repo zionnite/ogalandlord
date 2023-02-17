@@ -39,5 +39,19 @@ class Partners_db extends My_Model{
         return false;
     }
 
+    
+
+   	public function count_all_report(){
+		return $this->db->from('report_property')->count_all_results();
+	}
+    public function get_all_report($offset,$per_page){
+
+        $this->db->limit($per_page,$offset);
+        $query  =$this->db->get('report_property');
+        if($query->num_rows() > 0){
+            return $query->result_array();
+        }
+        return false;
+    }
    
 }

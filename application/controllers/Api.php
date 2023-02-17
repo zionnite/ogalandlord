@@ -2145,7 +2145,7 @@ class Api extends My_Controller{
             }
         }
         return false;
-   }
+    }
 
     public function get_last_chat_time_limit_by_1($sender_id){
         $this->db->where('reciever',$sender_id);
@@ -2179,19 +2179,19 @@ class Api extends My_Controller{
     }
 
 
-   public function count_dis_unread_message($id,$my_id,$dis_user_id){
+    public function count_dis_unread_message($id,$my_id,$dis_user_id){
         // $this->db->where('id',$id);
         $this->db->where('reciever',$my_id);
         $this->db->where('sender',$dis_user_id);
         $this->db->where('reciever_status','unread');
 
         return $this->db->from('chat_box')->count_all_results();
-   }
+    }
 
     public function count_message_id($id){
         $this->db->where('id',$id);
         return $this->db->from('chat_box')->count_all_results();
-   }
+    }
     
     
 
@@ -4385,7 +4385,7 @@ class Api extends My_Controller{
                         'agent_id'                                =>  $agent_id,
                         'agent_user_name'                         =>  $agent_user_name,
                         'agent_full_name'                         =>  $agent_full_name,
-                        'agent_email'                             =>  $agent_full_name,
+                        'agent_email'                             =>  $agent_email,
                         'agent_image_name'                        =>  $agent_image_name,
                         'agent_status'                            =>  $agent_status,
                         'agent_phone'                             =>  $agent_phone,
@@ -4483,7 +4483,7 @@ class Api extends My_Controller{
                         'agent_id'                                =>  $agent_id,
                         'agent_user_name'                         =>  $agent_user_name,
                         'agent_full_name'                         =>  $agent_full_name,
-                        'agent_email'                             =>  $agent_full_name,
+                        'agent_email'                             =>  $agent_email,
                         'agent_image_name'                        =>  $agent_image_name,
                         'agent_status'                            =>  $agent_status,
                         'agent_phone'                             =>  $agent_phone,
@@ -4729,7 +4729,7 @@ class Api extends My_Controller{
                                     'agent_id'                                =>  $agent_id,
                                     'agent_user_name'                         =>  $agent_user_name,
                                     'agent_full_name'                         =>  $agent_full_name,
-                                    'agent_email'                             =>  $agent_full_name,
+                                    'agent_email'                             =>  $agent_email,
                                     'agent_image_name'                        =>  $agent_image_name,
                                     'agent_status'                            =>  $agent_status,
                                     'agent_phone'                             =>  $agent_phone,
@@ -5018,7 +5018,7 @@ class Api extends My_Controller{
                     'agent_id'                                =>  $agent_id,
                     'agent_user_name'                         =>  $agent_user_name,
                     'agent_full_name'                         =>  $agent_full_name,
-                    'agent_email'                             =>  $agent_full_name,
+                    'agent_email'                             =>  $agent_email,
                     'agent_image_name'                        =>  $agent_image_name,
                     'agent_status'                            =>  $agent_status,
                     'agent_phone'                             =>  $agent_phone,
@@ -5157,7 +5157,7 @@ class Api extends My_Controller{
                                     'agent_id'                                =>  $agent_id,
                                     'agent_user_name'                         =>  $agent_user_name,
                                     'agent_full_name'                         =>  $agent_full_name,
-                                    'agent_email'                             =>  $agent_full_name,
+                                    'agent_email'                             =>  $agent_email,
                                     'agent_image_name'                        =>  $agent_image_name,
                                     'agent_status'                            =>  $agent_status,
                                     'agent_phone'                             =>  $agent_phone,
@@ -5257,7 +5257,7 @@ class Api extends My_Controller{
                                     'agent_id'                                =>  $agent_id,
                                     'agent_user_name'                         =>  $agent_user_name,
                                     'agent_full_name'                         =>  $agent_full_name,
-                                    'agent_email'                             =>  $agent_full_name,
+                                    'agent_email'                             =>  $agent_email,
                                     'agent_image_name'                        =>  $agent_image_name,
                                     'agent_status'                            =>  $agent_status,
                                     'agent_phone'                             =>  $agent_phone,
@@ -5470,6 +5470,25 @@ class Api extends My_Controller{
         $msg    =array();
         $count_msg				= $this->Chat_db->count_unread_message($user_id);
         $msg['count_msg']       = $count_msg;
+        echo json_encode($msg);
+    }
+
+
+    public function check_ifBan($user_id =NULL){
+        $msg    =array();
+        
+        $this->db->where('id',$user_id);
+        $this->db->where('login_status','ban');
+
+         $this->db->or_where('id',$user_id);
+        $this->db->where('login_status','fraud');
+
+        $query      = $this->db->get('users');
+        if($query->num_rows() > 0){
+            $msg['status']  = true;
+        }else{
+            $msg['status']  = false;
+        }
         echo json_encode($msg);
     }
 }

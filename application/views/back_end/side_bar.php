@@ -87,7 +87,9 @@
 
             </ul>
         </li>
+
         <?php }else if($user_status == 'admin' || $user_status == 'super_admin'){?>
+
 
 
         <li class="menu-label">Manage Properties</li>
@@ -117,6 +119,14 @@
                             class="bx bx-right-arrow-alt"></i>Rejected Property</a></li>
 
             </ul>
+        </li>
+
+        <li>
+            <a href="<?php echo base_url();?>Admin_panel/reported_property">
+                <div class="parent-icon"><i class="fadeIn animated bx bx-message-square-error"></i>
+                </div>
+                <div class="menu-title">Reported Property</div>
+            </a>
         </li>
 
 
