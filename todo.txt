@@ -1,0 +1,5 @@
+String pay_link ='https://ogabliss.com/Transaction/app_pay/$my_id/$agent_id/$propsId';
+String agree_link ='https://ogabliss.com/Transaction/app_agree/$my_id/$agent_id/$propsId';
+String link = 'https://ogabliss.com/Wallet/auth_user';
+
+$this->db->insert('report_property');

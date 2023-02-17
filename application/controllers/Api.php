@@ -2985,7 +2985,7 @@ class Api extends My_Controller{
     public function get_my_product($page=NULL, $user_id =NULL){
         $msg    = array();
         $start = 0;
-        $limit = 5;
+        $limit = 20;
         $total    =$this->count_all_product($user_id);
 
         if($page > $total) {
