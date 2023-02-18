@@ -49,5 +49,12 @@ class Wallet extends My_Controller {
 		$data['content']        ='back_end/fund_wallet';
 		$this->load->view($this->admin_layout,$data);
 	}
+
+	public function auth_user($user_id){
+		//auth user
+		$this->Users_db->auth_user($user_id);
+		redirect('Wallet/fund_wallet');
+		
+	}
 	
 }

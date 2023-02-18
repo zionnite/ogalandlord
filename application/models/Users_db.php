@@ -738,5 +738,45 @@ class Users_db extends My_Model{
         return false;
     }
 
-    
+    public function auth_user($user_id){
+        $this->db->where('id',$user_id);
+        
+		$query	=$this->db->get('users');
+        if($query->num_rows() == 1){
+            $row	=$query->row();
+                
+            $phone_no       	=$row->phone;
+            $user_id        	=$row->id;
+            $user_name	        =$row->user_name;
+            $email				=$row->email;
+            $user_img			=$row->image_name;
+            $status         	=$row->status;
+            $full_name			=$row->full_name;
+			
+            if($status == 'admin' || $status =='super_admin'){
+                $admin_status   = true;
+            }else{
+                $admin_status   = false;
+            }
+            
+				
+            $data4=array(
+                	'phone_no'=>$phone_no,
+                	'user_id'=>$user_id,
+                	'user_name'=>$user_name,
+                	'user_img'=>$user_img,
+                	'email'=>$email,
+                	'full_name'=>$full_name,
+                	'status'=>$status,
+                	'validation'=>TRUE,
+					'user_status'=>TRUE,
+                	'online_status'=>'online',
+                    'admin_status'=> $admin_status,
+			);
+            $this->session->set_userdata($data4);
+            return	$data4;
+        }else{
+            return 	FALSE;
+        }
+   }
 }
