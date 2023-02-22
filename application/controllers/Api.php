@@ -5491,4 +5491,58 @@ class Api extends My_Controller{
         }
         echo json_encode($msg);
     }
+
+
+    public function delete_account($user_id=NULL){
+        $msg    =array();
+        
+        $this->db->where('id',$user_id);
+
+        $this->db->delete('users');
+        if($this->db->affected_rows() > 0){
+
+            $this->db->where('agent_id',$user_id);
+            
+            $query  = $this->db->get('propery');
+            if($query->num_rows() > 0){
+                $data   = array('live_status'=>'rejected');
+                $this->db->set($data);
+                $this->db->where('agent_id',$user_id);
+                $this->db->update('propery');
+
+                $msg['status']  = true;
+            }else{
+                $msg['status']  = true;
+            }
+
+            
+        }else{
+            $msg['status']  = false;
+        }
+        echo json_encode($msg);
+    }
+    
+
+
+    /*App Updates*/
+    public function has_new_update(){
+        $msg    = array();
+        $counter    = $this->ApiAdmin_db->get_update_version();
+        $msg  = array('counter' => (int)$counter);
+        echo json_encode($msg);
+    }
+
+    public function ios_store_link(){
+        $msg    = array();
+        $link     = $this->ApiAdmin_db->get_app_ios_link();
+        $msg  = array('link' => $link);
+        echo json_encode($msg);
+    }
+
+    public function android_store_link(){
+        $msg    = array();
+        $link     = $this->ApiAdmin_db->get_app_android_link();
+        $msg  = array('link' => $link);
+        echo json_encode($msg);
+    }
 }

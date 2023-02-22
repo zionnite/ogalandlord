@@ -1597,4 +1597,48 @@ class ApiAdmin_db extends My_Model{
         }
         return false;
     }
+
+
+    public function update_app_version($version_num, $android_link, $ios_link){
+        $this->db->empty_table('app_version');
+        $data   = array('app_version' => $version_num, 'android_link' => $android_link, 'ios_link' => $ios_link);
+        $this->db->set($data);
+        $this->db->insert('app_version');
+        if ($this->db->affected_rows() > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public function get_update_version(){
+        $query  = $this->db->get('app_version');
+        if ($query->num_rows() > 0) {
+            foreach ($query->result_array() as $row) {
+                return $row['app_version'];
+            }
+        }
+        return false;
+    }
+
+    
+    public function get_app_android_link(){
+        $query  = $this->db->get('app_version');
+        if ($query->num_rows() > 0) {
+            foreach ($query->result_array() as $row) {
+                return $row['android_link'];
+            }
+        }
+        return false;
+    }
+    
+    public function get_app_ios_link(){
+        $query  = $this->db->get('app_version');
+        if ($query->num_rows() > 0) {
+            foreach ($query->result_array() as $row) {
+                return $row['ios_link'];
+            }
+        }
+        return false;
+    }
+
 }
