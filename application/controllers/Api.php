@@ -5091,7 +5091,7 @@ class Api extends My_Controller{
         $address         = $this->input->post('address');
         
 
-        if ($gender == 'false') {
+        if ($gender == 'female') {
             $sex    = 'Female';
         } else {
             $sex    = 'Male';
