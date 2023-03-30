@@ -42,8 +42,14 @@ class Login extends My_Controller {
                             $data['status']         		=$this->session->userdata('status');
                             
                             if($data['status'] =='user'){
+                                $isUserRequestNo            = $this->Promoter_db->isUserRequestNo($data['user_id']);
+                                if($isUserRequestNo){
+                                    redirect('Dashboard/call_to_action');
+                                }else{
+                                    redirect('Dashboard/index');
+                                }
 
-                                redirect('Dashboard/index');
+                                
                             }else if($data['status'] =='agent' || $data['status'] == 'landlord'){
 
                                 redirect('Dashboard/index');

@@ -232,7 +232,8 @@ class Dashboard extends My_Controller {
 					$this->failed_alert_callbark('Database Busy, Could not perform operation, Pls Try Again Later!');
                 }
 			}
-			redirect('Dashboard/view_property/');
+			// redirect('Dashboard/view_property/');
+			redirect('Dashboard/is_promoter_needed/'.$props_id);
 	}
 
 	public function view_property(){
@@ -704,11 +705,79 @@ class Dashboard extends My_Controller {
 	/*Messaging System*/
 
 	
+	public function is_promoter_needed($props_id =NULL){
+		$data['alert']			=$this->session->flashdata('alert');
 
+		
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+
+		$data['get_property']			=$this->Admin_db->get_agent_property($data['user_id']);
+
+		$data['status']         		=$this->session->userdata('status');
+		$data['content'] 				='back_end/is_promoter_needed';
+		$data['props_id']				=$props_id;
+		
+		$this->load->view($this->admin_layout,$data);
+	}
+
+	public function insert_is_promoter_needed($props_id=NULL){
+		$this->session_checker->my_session();
+        $this->chat_online_tracker->check();
+		
+		if($this->input->post('submit')){
+			$is_marketer_needed							= $this->input->post('is_marketer_needed');
+			$commission									= $this->input->post('commission');
+		
+			
+			$action	=$this->Admin_db->insert_is_promoter_needed($is_marketer_needed, $commission, $props_id);
+			
+			if($action){
+
+				$this->success_alert_callbark('Property Promoter updated...');
+				redirect('Dashboard/view_property');
+				// redirect('Dashboard/add_extra_detail/'.$props_id);
+			}else{
+
+				$this->failed_alert_callbark('Database Busy, Could not update Promoter for Property, please try again later');
+				redirect('Dashboard/view_property');
+			}
+
+		}else{
+
+			$this->failed_alert_callbark('You need to click the button to proceed this request');
+			redirect('Dashboard/view_property');
+		}
+
+		
+		
+	}
+
+		
+	public function call_to_action(){
+		$data['alert']			=$this->session->flashdata('alert');
+
+		
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+
+		$data['content'] 				='back_end/call_to_action';
+
+		
+		$this->load->view($this->admin_layout,$data);
+	}
+
+	
 }
-
-
-
-
-
-

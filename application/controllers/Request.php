@@ -19,8 +19,8 @@ class Request extends My_Controller {
 		$data['age']         			=$this->session->userdata('age');
 		$data['email']         			=$this->session->userdata('email');
 		$data['full_name']         		=$this->session->userdata('full_name');
-		$data['user_status']         		=$this->session->userdata('status');
-		$data['admin_status']         		=$this->session->userdata('admin_status');
+		$data['user_status']         	=$this->session->userdata('status');
+		$data['admin_status']         	=$this->session->userdata('admin_status');
 
         // $data['get_request']    =$this->Request_db->get_request_by_user_id($data['user_id']);
 
@@ -147,6 +147,68 @@ class Request extends My_Controller {
 		redirect('Dashboard/view_favourite');
 
 	}
+
+	public function request_inspection_3($props_id=NULL, $agent_id=NULL, $url_code=NULL){
+		//$url_code		= urldecode($url_code);
+		$validation		=$this->session->userdata('validation');
+
+		if($validation){
+			
+			$data['props_id']				= $props_id;
+			$data['agent_id']				= $agent_id;
+			$data['user_id']				= $this->session->userdata('user_id');
+			$user_status                    = $this->Users_db->get_user_status($data['user_id']);
+
+			$title							="Site  Inspection";
+			$desc							="A User of has requested for site Inspection";
+
+			$checker			=$this->Request_db->check_if_user_n_props_exist_in_request(
+													$data['user_id'],
+													$data['agent_id'],
+													$data['props_id']
+												);
+			if($checker){
+				
+				$this->failed_alert_callbark('You already initiated a Request');
+			}else{
+
+				if($user_status == 'user'){
+					$action		= $this->Request_db->insert_into_request_tbl_2($data['user_id'],$data['agent_id'],$data['props_id'],$title,$desc);
+					if($action){
+						$this->success_alert_callbark('Inpsection has been requested, Awaiting Admin feedback');
+					}else{
+						$this->failed_alert_callbark('Database Busy, Could not perform operation, Pls Try Again Later!');
+					}
+				}else{
+					$this->failed_alert_callbark('This feature is available only to Users not Landlord ( or Agent)');
+				}
+				
+			}
+
+
+			redirect('Dashboard');
+		}else{
+			$checker			=$this->Request_db->check_if_user_n_props_exist_in_request(
+													$data['user_id'],
+													$data['agent_id'],
+													$data['props_id']
+												);
+			if($checker){
+				
+				$this->failed_alert_callbark('You already initiated a Request');
+			}else{
+
+				$this->failed_alert_callbark('You need to create an Account Before you can Request for Property Inspection');
+				redirect('Register/reg_prom/'.$props_id.'/'.$url_code);
+			}
+		}
+		
+		
+		//redirect('Dashboard');
+
+	}
+
+	//Request Inspection through Promoters page
 
 
 

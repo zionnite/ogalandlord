@@ -112,7 +112,7 @@ class Transaction extends My_Controller {
 			$commission		=  ($get_agent_com/100) * $props_amount;
 			$value_amount	=	$props_amount.' +'.$get_agent_com.'% ('.$commission.')';
 			$new_amount		=	$props_amount + $commission;
-			$value_amount_2	=	'+'.$get_agent_com.'% Agent Fee';
+			$value_amount_2	=	'+'.$get_agent_com.'% Platform Fee';
 
 			
 			
@@ -249,18 +249,169 @@ class Transaction extends My_Controller {
 		$insurance_account_number	=$this->Action->get_insurance_account_number();
 		$insurance_account_name	=$this->Action->get_insurance_account_name();
 
-		
-		//get agent bank code, name, account number
-		$check_if_user_was_refered 	=$this->Users_db->checkIfReferred($user_id);
-		
-		if($check_if_user_was_refered){
-			$referal_id 					=$this->Users_db->get_referral_id($user_id);
-			$referal_bank_code				=$this->Users_db->get_user_bank_code($referal_id);
-			$referal_bank_name				=$this->Users_db->get_user_bank_name($referal_id);
-			$referal_account_num			=$this->Users_db->get_user_account_num($referal_id);
-			$referal_account_name			=$this->Users_db->get_user_account_name($referal_id);
 
-			if($referal_id	!= $agent_id){
+		//check if property its promoted
+		$is_promoted				= $this->Promoter_db->check_if_property_isPromoted($props_id);
+		$isUserPromoterRefered		= $this->Promoter_db->isUserPromoterRefered($user_id, $props_id);
+		
+		
+
+		if($isUserPromoterRefered){
+			$promoter_id					= $this->Promoter_db->getPromoterIdByRefereId($user_id, $props_id);
+			$promoter_bank_code				=$this->Users_db->get_user_bank_code($promoter_id);
+			$promoter_bank_name				=$this->Users_db->get_user_bank_name($promoter_id);
+			$promoter_account_num			=$this->Users_db->get_user_account_num($promoter_id);
+			$promoter_account_name			=$this->Users_db->get_user_account_name($promoter_id);
+
+
+			//get agent bank code, name, account number
+			$check_if_user_was_refered 			=$this->Users_db->checkIfReferred($user_id);
+			if($check_if_user_was_refered){
+				
+				$referal_id 					=$this->Users_db->get_referral_id($user_id);
+				$referal_bank_code				=$this->Users_db->get_user_bank_code($referal_id);
+				$referal_bank_name				=$this->Users_db->get_user_bank_name($referal_id);
+				$referal_account_num			=$this->Users_db->get_user_account_num($referal_id);
+				$referal_account_name			=$this->Users_db->get_user_account_name($referal_id);
+
+				if($referal_id	!= $agent_id){
+
+					$fields =array(
+						"batch"	=>array(
+							array("type" => "nuban",
+								"name" => $my_account_name,
+								"account_number" => $my_account_num,
+								"bank_code" => $my_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"user_rc",
+									"agent_id"	=> $agent_id
+								)
+							),
+
+							array("type" => "nuban",
+								"name" => $agent_account_name,
+								"account_number" => $agent_account_num,
+								"bank_code" => $agent_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"agent_rc",
+									"agent_id"	=> $agent_id
+								)
+							),
+
+							array("type" => "nuban",
+								"name" => $insurance_account_name,
+								"account_number" => $insurance_account_number,
+								"bank_code" => $insurance_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"insur_rc",
+									"agent_id"	=> $agent_id
+								)
+							),
+
+							array("type" => "nuban",
+								"name" => $referal_bank_name,
+								"account_number" => $referal_account_num,
+								"bank_code" => $referal_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"ref_rc",
+									"agent_id"	=> $agent_id,
+									'referal_id'	=>$referal_id
+								)
+							),
+
+
+							array("type" => "nuban",
+								"name" => $promoter_bank_name,
+								"account_number" => $promoter_account_num,
+								"bank_code" => $promoter_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"prom_rc",
+									"agent_id"	=> $agent_id,
+									"promoter_id"	=> $promoter_id
+								)
+							)
+								
+						)
+					);
+					
+				}else{
+
+					$fields =array(
+						"batch"	=>array(
+							array("type" => "nuban",
+								"name" => $my_account_name,
+								"account_number" => $my_account_num,
+								"bank_code" => $my_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"user_rc",
+									"agent_id"	=> $agent_id
+								)
+							),
+
+							array("type" => "nuban",
+								"name" => $agent_account_name,
+								"account_number" => $agent_account_num,
+								"bank_code" => $agent_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"agent_rc",
+									"agent_id"	=> $agent_id
+								)
+							),
+
+							array("type" => "nuban",
+								"name" => $insurance_account_name,
+								"account_number" => $insurance_account_number,
+								"bank_code" => $insurance_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"insur_rc",
+									"agent_id"	=> $agent_id
+								)
+							),
+
+
+							array("type" => "nuban",
+								"name" => $promoter_bank_name,
+								"account_number" => $promoter_account_num,
+								"bank_code" => $promoter_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"prom_rc",
+									"agent_id"	=> $agent_id,
+									"promoter_id"	=> $promoter_id
+								)
+							)
+						)
+					);
+				}
+
+				
+			}else{
 
 				$fields =array(
 					"batch"	=>array(
@@ -303,21 +454,142 @@ class Transaction extends My_Controller {
 							)
 						),
 
+
+
 						array("type" => "nuban",
-							"name" => $referal_bank_code,
-							"account_number" => $referal_account_num,
-							"bank_code" => $referal_bank_code,
+							"name" => $promoter_bank_name,
+							"account_number" => $promoter_account_num,
+							"bank_code" => $promoter_bank_code,
 							"currency" => "NGN",
 							"metadata" => array(
 								"props_id" => $props_id,
 								"sender_id"	=> $user_id,
-								"type"		=>"ref_rc",
+								"type"		=>"prom_rc",
 								"agent_id"	=> $agent_id,
-								'referal_id'	=>$referal_id,
+								"promoter_id"	=> $promoter_id
 							)
 						)
 					)
 				);
+					
+					
+			}
+
+		}else{
+			$check_if_user_was_refered 			=$this->Users_db->checkIfReferred($user_id);
+			if($check_if_user_was_refered){
+				
+				$referal_id 					=$this->Users_db->get_referral_id($user_id);
+				$referal_bank_code				=$this->Users_db->get_user_bank_code($referal_id);
+				$referal_bank_name				=$this->Users_db->get_user_bank_name($referal_id);
+				$referal_account_num			=$this->Users_db->get_user_account_num($referal_id);
+				$referal_account_name			=$this->Users_db->get_user_account_name($referal_id);
+
+				if($referal_id	!= $agent_id){
+
+					$fields =array(
+						"batch"	=>array(
+							array("type" => "nuban",
+								"name" => $my_account_name,
+								"account_number" => $my_account_num,
+								"bank_code" => $my_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"user_rc",
+									"agent_id"	=> $agent_id
+								)
+							),
+
+							array("type" => "nuban",
+								"name" => $agent_account_name,
+								"account_number" => $agent_account_num,
+								"bank_code" => $agent_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"agent_rc",
+									"agent_id"	=> $agent_id
+								)
+							),
+
+							array("type" => "nuban",
+								"name" => $insurance_account_name,
+								"account_number" => $insurance_account_number,
+								"bank_code" => $insurance_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"insur_rc",
+									"agent_id"	=> $agent_id
+								)
+							),
+
+							array("type" => "nuban",
+								"name" => $referal_account_name,
+								"account_number" => $referal_account_num,
+								"bank_code" => $referal_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"ref_rc",
+									"agent_id"	=> $agent_id,
+									'referal_id'	=>$referal_id,
+								)
+							)
+						)
+					);
+					
+				}else{
+
+					$fields =array(
+						"batch"	=>array(
+							array("type" => "nuban",
+								"name" => $my_account_name,
+								"account_number" => $my_account_num,
+								"bank_code" => $my_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"user_rc",
+									"agent_id"	=> $agent_id
+								)
+							),
+
+							array("type" => "nuban",
+								"name" => $agent_account_name,
+								"account_number" => $agent_account_num,
+								"bank_code" => $agent_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"agent_rc",
+									"agent_id"	=> $agent_id
+								)
+							),
+
+							array("type" => "nuban",
+								"name" => $insurance_account_name,
+								"account_number" => $insurance_account_number,
+								"bank_code" => $insurance_bank_code,
+								"currency" => "NGN",
+								"metadata" => array(
+									"props_id" => $props_id,
+									"sender_id"	=> $user_id,
+									"type"		=>"insur_rc",
+									"agent_id"	=> $agent_id
+								)
+							)
+						)
+					);
+				}
+
 				
 			}else{
 
@@ -363,55 +635,9 @@ class Transaction extends My_Controller {
 						)
 					)
 				);
+					
+					
 			}
-
-			
-		}else{
-
-			$fields =array(
-				"batch"	=>array(
-					array("type" => "nuban",
-						"name" => $my_account_name,
-						"account_number" => $my_account_num,
-						"bank_code" => $my_bank_code,
-						"currency" => "NGN",
-						"metadata" => array(
-							"props_id" => $props_id,
-							"sender_id"	=> $user_id,
-							"type"		=>"user_rc",
-							"agent_id"	=> $agent_id
-						)
-					),
-
-					array("type" => "nuban",
-						"name" => $agent_account_name,
-						"account_number" => $agent_account_num,
-						"bank_code" => $agent_bank_code,
-						"currency" => "NGN",
-						"metadata" => array(
-							"props_id" => $props_id,
-							"sender_id"	=> $user_id,
-							"type"		=>"agent_rc",
-							"agent_id"	=> $agent_id
-						)
-					),
-
-					array("type" => "nuban",
-						"name" => $insurance_account_name,
-						"account_number" => $insurance_account_number,
-						"bank_code" => $insurance_bank_code,
-						"currency" => "NGN",
-						"metadata" => array(
-							"props_id" => $props_id,
-							"sender_id"	=> $user_id,
-							"type"		=>"insur_rc",
-							"agent_id"	=> $agent_id
-						)
-					)
-				)
-			);
-				
-				
 		}
 
 
@@ -480,23 +706,44 @@ class Transaction extends My_Controller {
 		$get_office_com        		= $this->Action->get_agent_com();
 		$get_insurance_com        	= $this->Action->get_insurance_com();
 
+		//promoter commissioin
+		$get_promoter_com			= $this->Promoter_db->get_promoter_com($props_id);
+
+
 		//total_amount
 		$wallet_total_amount			= $this->Wallet_db->get_this_wallet_prop_amount($props_id,$agent_id,$user_id);
 		// $office_perc 	 			=($get_office_com/100) * $total_amount;
 		// $new_total_amount			= $total_amount - $office_perc;	
 
 		
-		$total_amount            	= $this->Admin_db->get_props_amount_by_id($props_id);
-		$office_perc			 	= ($get_office_com/100) * $total_amount;
+		
+		
+
+		$url = "https://api.paystack.co/transfer/bulk";
+		
+
+		$props_amount            	= $this->Admin_db->get_props_amount_by_id($props_id);
+		$office_perc			 	= ($get_office_com/100) * $props_amount;
 
 		//inssurance percent
 		$insurance_perc				= ($get_insurance_com/100) * $office_perc;
 
 		//referal Percent
 		$referal_perc 				= ($get_referal_com/100) * $office_perc;
-		
 
-		$url = "https://api.paystack.co/transfer/bulk";
+
+		$is_promoted				= $this->Promoter_db->check_if_property_isPromoted($props_id);
+		$isUserPromoterRefered		= $this->Promoter_db->isUserPromoterRefered($user_id, $props_id);
+		if($isUserPromoterRefered){
+			//promoter percent
+			$promoter_perc				= ($get_promoter_com/100) * $props_amount;
+			$total_amount            	= $props_amount - $promoter_perc;
+			
+		}else{
+
+			$total_amount            	= $props_amount;
+		}
+
 
 
 		//get my bank code, name, account number
@@ -527,21 +774,116 @@ class Transaction extends My_Controller {
 		$insurance_ref				=random_string('numeric', 16);
 
 
-		
-		//get agent bank code, name, account number
-		$check_if_user_was_refered 	=$this->Users_db->checkIfReferred($user_id);
-		
-		if($check_if_user_was_refered){
-			$referal_id 					=$this->Users_db->get_referral_id($user_id);
-			$referal_bank_code				=$this->Users_db->get_user_bank_code($referal_id);
-			$referal_bank_name				=$this->Users_db->get_user_bank_name($referal_id);
-			$referal_account_num			=$this->Users_db->get_user_account_num($referal_id);
-			$referal_account_name			=$this->Users_db->get_user_account_name($referal_id);
-			$ref_rec						=$this->Transaction_db->get_ref_rc($user_id,$agent_id,$props_id);
-			$ref_amount						=(int)$referal_perc*100;
-			$referal_ref					=random_string('numeric', 16);
 
-			if($referal_id	!= $agent_id){
+		//check if property its promoted		
+		if($isUserPromoterRefered){
+			$promoter_id					=$this->Promoter_db->getPromoterIdByRefereId($user_id, $props_id);
+			$promoter_bank_code				=$this->Users_db->get_user_bank_code($promoter_id);
+			$promoter_bank_name				=$this->Users_db->get_user_bank_name($promoter_id);
+			$promoter_account_num			=$this->Users_db->get_user_account_num($promoter_id);
+			$promoter_account_name			=$this->Users_db->get_user_account_name($promoter_id);
+			
+
+			$prom_rec						=$this->Transaction_db->get_promoter_rc($user_id,$agent_id,$props_id);
+			$prom_amount					=(int)$promoter_perc*100;
+			$prom_ref						=random_string('numeric', 16);
+
+
+
+			
+		
+			//get agent bank code, name, account number
+			$check_if_user_was_refered 	=$this->Users_db->checkIfReferred($user_id);
+			
+			if($check_if_user_was_refered){
+				$referal_id 					=$this->Users_db->get_referral_id($user_id);
+				$referal_bank_code				=$this->Users_db->get_user_bank_code($referal_id);
+				$referal_bank_name				=$this->Users_db->get_user_bank_name($referal_id);
+				$referal_account_num			=$this->Users_db->get_user_account_num($referal_id);
+				$referal_account_name			=$this->Users_db->get_user_account_name($referal_id);
+				$ref_rec						=$this->Transaction_db->get_ref_rc($user_id,$agent_id,$props_id);
+				$ref_amount						=(int)$referal_perc*100;
+				$referal_ref					=random_string('numeric', 16);
+
+				if($referal_id	!= $agent_id){
+					$fields	= array(
+						'currency' 	=> "NGN",
+						'source' 	=> "balance",
+						'transfers' =>array(
+							//agent
+							array(
+								'amount' => $agent_amount,
+								'reason' => "Payment for Property via ".$site_name,
+								'recipient' => $agent_rec,
+								'reference'	=> $agent_ref
+							),
+
+							//insurance
+							
+							array(
+								'amount' => $insurance_amount,
+								'reason' => "Payment Commission for property shopping via ".$site_name,
+								'recipient' => $insurance_rec,
+								'reference'	=> $insurance_ref
+							),
+
+							//referal
+							array(
+								'amount' => $ref_amount,
+								'reason' => "Referral Commision from ".$site_name,
+								'recipient' => $ref_rec,
+								'reference'	=> $referal_ref
+							),
+
+							//promoter
+							array(
+								'amount' => $prom_amount,
+								'reason' => "Promoter Commision from ".$site_name,
+								'recipient' => $prom_rec,
+								'reference'	=> $prom_ref
+							),
+						),
+					);
+				}else{
+
+					$new_agent_amount	= $agent_amount + $ref_amount;
+
+						$fields	= array(
+						'currency' 	=> "NGN",
+						'source' 	=> "balance",
+						'transfers' =>array(
+							//agent
+							array(
+								'amount' => $new_agent_amount,
+								'reason' => "Payment for Property via ".$site_name." along with Referal Commision of ". $ref_amount." NGN",
+								'recipient' => $agent_rec,
+								'reference'	=> $agent_ref
+							),
+
+							//insurance
+							
+							array(
+								'amount' => $insurance_amount,
+								'reason' => "Payment Commission for property shopping via ".$site_name,
+								'recipient' => $insurance_rec,
+								'reference'	=> $insurance_ref
+							),
+
+							//promoter
+							array(
+								'amount' => $prom_amount,
+								'reason' => "Promoter Commision from ".$site_name,
+								'recipient' => $prom_rec,
+								'reference'	=> $prom_ref
+							),
+
+						),
+					);
+				}
+
+				
+			}else{
+
 				$fields	= array(
 					'currency' 	=> "NGN",
 					'source' 	=> "balance",
@@ -563,27 +905,102 @@ class Transaction extends My_Controller {
 							'reference'	=> $insurance_ref
 						),
 
-						//referal
+						//promoter
 						array(
-							'amount' => $ref_amount,
-							'reason' => "Referral Commision from ".$site_name,
-							'recipient' => $ref_rec,
-							'reference'	=> $referal_ref
+							'amount' => $prom_amount,
+							'reason' => "Promoter Commision from ".$site_name,
+							'recipient' => $prom_rec,
+							'reference'	=> $prom_ref
 						),
 					),
 				);
+			}
+		}else{
+
+			//get agent bank code, name, account number
+			$check_if_user_was_refered 	=$this->Users_db->checkIfReferred($user_id);
+			
+			if($check_if_user_was_refered){
+				$referal_id 					=$this->Users_db->get_referral_id($user_id);
+				$referal_bank_code				=$this->Users_db->get_user_bank_code($referal_id);
+				$referal_bank_name				=$this->Users_db->get_user_bank_name($referal_id);
+				$referal_account_num			=$this->Users_db->get_user_account_num($referal_id);
+				$referal_account_name			=$this->Users_db->get_user_account_name($referal_id);
+				$ref_rec						=$this->Transaction_db->get_ref_rc($user_id,$agent_id,$props_id);
+				$ref_amount						=(int)$referal_perc*100;
+				$referal_ref					=random_string('numeric', 16);
+
+				if($referal_id	!= $agent_id){
+					$fields	= array(
+						'currency' 	=> "NGN",
+						'source' 	=> "balance",
+						'transfers' =>array(
+							//agent
+							array(
+								'amount' => $agent_amount,
+								'reason' => "Payment for Property via ".$site_name,
+								'recipient' => $agent_rec,
+								'reference'	=> $agent_ref
+							),
+
+							//insurance
+							
+							array(
+								'amount' => $insurance_amount,
+								'reason' => "Payment Commission for property shopping via ".$site_name,
+								'recipient' => $insurance_rec,
+								'reference'	=> $insurance_ref
+							),
+
+							//referal
+							array(
+								'amount' => $ref_amount,
+								'reason' => "Referral Commision from ".$site_name,
+								'recipient' => $ref_rec,
+								'reference'	=> $referal_ref
+							),
+						),
+					);
+				}else{
+
+					$new_agent_amount	= $agent_amount + $ref_amount;
+
+						$fields	= array(
+						'currency' 	=> "NGN",
+						'source' 	=> "balance",
+						'transfers' =>array(
+							//agent
+							array(
+								'amount' => $new_agent_amount,
+								'reason' => "Payment for Property via ".$site_name." along with Referal Commision of ". $ref_amount." NGN",
+								'recipient' => $agent_rec,
+								'reference'	=> $agent_ref
+							),
+
+							//insurance
+							
+							array(
+								'amount' => $insurance_amount,
+								'reason' => "Payment Commission for property shopping via ".$site_name,
+								'recipient' => $insurance_rec,
+								'reference'	=> $insurance_ref
+							),
+
+						),
+					);
+				}
+
+				
 			}else{
 
-				$new_agent_amount	= $agent_amount + $ref_amount;
-
-					$fields	= array(
+				$fields	= array(
 					'currency' 	=> "NGN",
 					'source' 	=> "balance",
 					'transfers' =>array(
 						//agent
 						array(
-							'amount' => $new_agent_amount,
-							'reason' => "Payment for Property via ".$site_name." along with Referal Commision of ". $ref_amount." NGN",
+							'amount' => $agent_amount,
+							'reason' => "Payment for Property via ".$site_name,
 							'recipient' => $agent_rec,
 							'reference'	=> $agent_ref
 						),
@@ -596,36 +1013,9 @@ class Transaction extends My_Controller {
 							'recipient' => $insurance_rec,
 							'reference'	=> $insurance_ref
 						),
-
 					),
 				);
 			}
-
-			
-		}else{
-
-			$fields	= array(
-				'currency' 	=> "NGN",
-				'source' 	=> "balance",
-				'transfers' =>array(
-					//agent
-					array(
-						'amount' => $agent_amount,
-						'reason' => "Payment for Property via ".$site_name,
-						'recipient' => $agent_rec,
-						'reference'	=> $agent_ref
-					),
-
-					//insurance
-					
-					array(
-						'amount' => $insurance_amount,
-						'reason' => "Payment Commission for property shopping via ".$site_name,
-						'recipient' => $insurance_rec,
-						'reference'	=> $insurance_ref
-					),
-				),
-			);
 		}
 
 
@@ -848,3 +1238,6 @@ class Transaction extends My_Controller {
 	}
 
 }
+
+
+// https://ogabliss.com/Webhook/get_webhooks

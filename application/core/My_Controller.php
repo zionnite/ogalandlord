@@ -54,6 +54,7 @@ class My_Controller extends CI_Controller{
 		$this->load->model('Partners_db');
 		$this->load->model('Wallet_db');
 		$this->load->model('ApiAdmin_db');
+		$this->load->model('Promoter_db');
 
 	}
 

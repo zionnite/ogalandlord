@@ -104,7 +104,19 @@ class Webhook extends My_Controller {
                 $this->Transaction_db->add_complete_transaction($referal_id, $sender_id, $props_id, $trans_type, $amount, $ref, $desc, $status);
                 $this->Wallet_db->fund_total_earning($referal_id,$amount);
 
-            }else if($type  == 'user_rc'){
+            }
+            else if($type =='prom_rc'){
+
+                $promoter_id           = $dataarray['data']['recipient']['metadata']['promoter_id'];
+
+                $trans_type		='complete_transafer';
+                $desc			='Commission for Promoting Property';
+                $status			='success';
+                $this->Transaction_db->add_complete_transaction($promoter_id, $sender_id, $props_id, $trans_type, $amount, $ref, $desc, $status);
+                $this->Wallet_db->fund_total_earning($promoter_id,$amount);
+
+            }
+            else if($type  == 'user_rc'){
 
                 //update transaction status
                $this->Transaction_db->update_user_pull_out_success($sender_id,$props_id);
@@ -121,13 +133,17 @@ class Webhook extends My_Controller {
             $type               = $dataarray['data']['recipient']['metadata']['type'];
             $props_id           = $dataarray['data']['recipient']['metadata']['props_id'];
 
-            $this->Transaction_db->update_transaction_transfer_failed($sender_id,$props_id,$amount);
-            $this->Wallet_db->update_wallet_transfer_failed($sender_id,$props_id);
+           
 
             if($type  == 'user_rc'){
+                //user pulling out
 
                 $this->Transaction_db->update_user_pull_out_failed($sender_id,$props_id,$amount);
                 $this->Wallet_db->update_user_wallet_pullout_failed($sender_id,$props_id);
+            }else{
+
+                $this->Transaction_db->update_transaction_transfer_failed_2($sender_id,$props_id,$amount);
+                $this->Wallet_db->update_wallet_transfer_failed($sender_id,$props_id);
             }
         }
         else if($event == 'transfer.reversed' && $status =='reversed'){
@@ -136,13 +152,17 @@ class Webhook extends My_Controller {
             $type               = $dataarray['data']['recipient']['metadata']['type'];
             $props_id           = $dataarray['data']['recipient']['metadata']['props_id'];
 
-            $this->Transaction_db->update_transaction_transfer_failed($sender_id,$props_id,$amount);
-            $this->Wallet_db->update_wallet_transfer_failed($sender_id,$props_id);
+            
 
             if($type  == 'user_rc'){
+                //user pulling out
 
                 $this->Transaction_db->update_user_pull_out_reversed($sender_id,$props_id,$amount);
                 $this->Wallet_db->update_user_wallet_pullout_reversed($sender_id,$props_id);
+            }else{
+
+                $this->Transaction_db->update_transaction_transfer_failed_2($sender_id,$props_id,$amount);
+                $this->Wallet_db->update_wallet_transfer_failed($sender_id,$props_id);
             }
         }
         

@@ -178,6 +178,8 @@ class Transaction_db extends My_Model{
 
             $data   = array('referal_rc'=>$rc_code);
 
+        }else if($type == 'prom_rc'){
+            $data   = array('promoter_rc'=>$rc_code);
         }
 
         $this->db->set($data);
@@ -248,6 +250,20 @@ class Transaction_db extends My_Model{
         return false;
     }
 
+    public function get_promoter_rc($sender_id,$agent_id,$props_id){
+        $this->db->where('sender_id',$sender_id);
+        $this->db->where('agent_id',$agent_id);
+        $this->db->where('prop_id',$props_id);
+
+        $query  =$this->db->get('transfer_rec');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['promoter_rc'];
+            }
+        }
+        return false;
+    }
+
     /**
     * Webhook Activites
     * user_id = reciever
@@ -283,6 +299,12 @@ class Transaction_db extends My_Model{
 
         $this->db->update('transaction');
         if($this->db->affected_rows() > 0){
+            //update propert status
+            $data       = array('prop_status'=>'unavailable');
+            $this->db->set($data);
+            $this->db->where('id',$props_id);
+            $this->db->update('propery');
+            
             // $this->Wallet_db->fund_current_balance($sender_id,-$amount);
             return true;
         }
@@ -300,11 +322,31 @@ class Transaction_db extends My_Model{
 
         $this->db->update('transaction');
         if($this->db->affected_rows() > 0){
+            //::COME HERE for reasoning
             $this->Wallet_db->fund_current_balance($sender_id,$amount);
             return true;
         }
         return false;
     }
+
+
+    public function update_transaction_transfer_failed_2($sender_id,$props_id, $amount){
+        $data   =array('status'=>'cancel');
+        $this->db->set($data);
+
+        $this->db->where('user_id',$sender_id);
+        $this->db->where('props_id',$props_id);
+        $this->db->where('trans_type','complete_withdraw');
+        $this->db->where('status','pending');
+
+        $this->db->update('transaction');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+    }
+
+
 
 
 

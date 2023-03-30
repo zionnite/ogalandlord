@@ -201,6 +201,18 @@ class Wallet_db extends My_Model{
         return false;
     }
 
+    public function check_if_isPay_2($user_id,$agent_id){
+        $this->db->where('user_id',$user_id);
+        $this->db->where('agent_id',$agent_id);
+        $this->db->where('is_pay','yes');
+
+        $query      =$this->db->get('wallet');
+        if($query->num_rows() > 0){
+            return true;
+        }
+        return false;
+    }
+
     public function check_if_prop_id_exist($user_id,$props_id){
         $this->db->where('user_id',$user_id);
         $this->db->where('props_id',$props_id);
@@ -334,9 +346,9 @@ class Wallet_db extends My_Model{
         $this->db->update('wallet');
         if($this->db->affected_rows() > 0){
 
-            $get_agent_com        	= $this->Action->get_agent_com();
-            $props_amount           = $this->Admin_db->get_props_amount_by_id($props_id);
-            $commission		        =  ($get_agent_com/100) * $props_amount;
+            $get_agent_com        	=   $this->Action->get_agent_com();
+            $props_amount           =   $this->Admin_db->get_props_amount_by_id($props_id);
+            $commission		        =   ($get_agent_com/100) * $props_amount;
             $new_amount		        =	$props_amount + $commission;
             $this->fund_current_balance($sender_id,$new_amount);
             return true;

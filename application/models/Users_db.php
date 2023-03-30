@@ -176,6 +176,42 @@ class Users_db extends My_Model{
         return false;
    }
 
+
+   public function register_user_3($full_name,$email,$pass,$status,$phone,$user_name,$url_code,$props_id,$logo){
+
+        $data       = array('full_name' =>$full_name,
+                            'email'=>$email,
+                            'password'=>md5($pass),
+                            'status'=>$status,
+                            'phone'=>$phone,
+                            'date_created'=>date('Y-m-d H:i:s'),
+                            'user_name'=>$user_name,
+                            'image_name'=>$logo,
+
+                        );
+        $this->db->set($data);
+        $this->db->insert('users');
+        $user_id    =$this->db->insert_id();
+        
+        if($this->db->affected_rows() > 0){
+
+            //user detail on promter_refered table
+
+            $promoter_id    = $this->Promoter_db->get_promoter_id_by_url_code(urldecode($url_code));
+            $data   = array(
+                'props_id'  =>$props_id,
+                'user_id'   => $user_id,
+                'promoter_id'   => $promoter_id,
+                'url_code'      => urldecode($url_code),
+            );
+
+            $this->db->set($data);
+            $this->db->insert('promoter_refered');
+            return true;
+        }
+        return false;
+   }
+
    public function loing_user($email,$pass){
         $this->db->where('user_name',$email);
         $this->db->where('password',md5($pass));

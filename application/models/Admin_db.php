@@ -1505,4 +1505,26 @@ class Admin_db extends My_Model{
         }
         return false;
     }
+
+    public function insert_is_promoter_needed($is_marketer_needed, $commission, $props_id){
+        $data       = array('is_marketer_needed' =>$is_marketer_needed,'commission'=>$commission);
+        $this->db->set($data);
+        $this->db->where('id',$props_id);
+        $this->db->update('propery');
+
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+    }
+
+    public function check_if_property_owner($user_id,$props_id){
+        $this->db->where('id',$props_id);
+        $this->db->where('agent_id',$user_id);
+        $query  =$this->db->get('propery');
+        if($query->num_rows() > 0){
+            return $query->result_array();
+        }
+        return false;
+    }
 }

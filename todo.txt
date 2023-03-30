@@ -1,3 +1,0 @@
-
-
-$this->db->insert('report_property');

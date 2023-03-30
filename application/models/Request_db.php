@@ -93,6 +93,31 @@ class Request_db extends My_Model{
         return false;
    }
 
+
+   public function insert_into_request_tbl_2($user_id,$agent_id,$props_id,$title,$desc){
+        
+        $data       = array('user_id'=>$user_id,
+                            'agent_id'=>$agent_id,
+                            'props_id'=>$props_id,
+                            'title'=>$title,
+                            'description'=>$desc,
+                            'date_created'=> date('Y-m-d H:i:s'),
+                            'time'=>time(),
+                        );
+        $this->db->set($data);
+        $this->db->insert('request');
+        if($this->db->affected_rows() > 0){
+
+            $data = array('is_requested'=>'yes');
+            $this->db->set($data);
+            $this->db->where('user_id',$user_id);
+            $this->db->where('props_id', $props_id);
+            $this->db->update('promoter_refered');
+            return true;
+        }
+        return false;
+   }
+
    public function update_request_status($id,$status){
         $data       = array('status'=> $status);
         $this->db->set($data);

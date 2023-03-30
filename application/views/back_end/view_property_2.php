@@ -74,7 +74,7 @@ else{
                     <div class="row">
 
                         <div class="col-lg-12 col-xl-12">
-                            <form class="" method="post" action="<?php echo base_url();?>Admin_panel/search_props">
+                            <form class="" method="post" action="<?php echo base_url();?>Product/search_props">
                                 <div class="row">
                                     <div class="col-md-10">
                                         <div class="position-relative">
@@ -124,7 +124,7 @@ else{
                                                 $name	= $row['name'];
                                         ?>
                                 <li><a class="dropdown-item"
-                                        href="<?php echo base_url();?>Admin_panel/fill_types/<?php echo $id;?>"><?php echo $name;?></a>
+                                        href="<?php echo base_url();?>Product/fill_types/<?php echo $id;?>"><?php echo $name;?></a>
                                 </li>
 
                                 <?php 
@@ -147,9 +147,9 @@ else{
                                 data-popper-placement="bottom-start">
 
                                 <li><a class="dropdown-item"
-                                        href="<?php echo base_url();?>Admin_panel/fill_purpose/rent">For Rent</a></li>
+                                        href="<?php echo base_url();?>Product/fill_purpose/rent">For Rent</a></li>
                                 <li><a class="dropdown-item"
-                                        href="<?php echo base_url();?>Admin_panel/fill_purpose/sale">For Sale</a></li>
+                                        href="<?php echo base_url();?>Product/fill_purpose/sale">For Sale</a></li>
 
                             </ul>
                         </div>
@@ -171,7 +171,7 @@ else{
                                                 $name	= $row['name'];
                                         ?>
                                 <li><a class="dropdown-item"
-                                        href="<?php echo base_url();?>Admin_panel/fill_state_property/<?php echo $id;?>"><?php echo $name;?></a>
+                                        href="<?php echo base_url();?>Product/fill_state_property/<?php echo $id;?>"><?php echo $name;?></a>
                                 </li>
 
                                 <?php 
@@ -184,7 +184,7 @@ else{
                     </div>
                 </div>
 
-                <form action="<?php echo base_url();?>Admin_panel/date_search" method="post">
+                <form action="<?php echo base_url();?>Product/date_search" method="post">
                     <div class="follow_float" style="margin-top:2.1%;">
                         <input type="submit" name="submit" class="btn btn-danger btn-sm btn-block" value="Go" />
                     </div>
@@ -315,6 +315,12 @@ else{
                                         $currency		='&#8358;';
 										$props_price		    = $currency.$this->cart->format_number($props_price);
 										$props_caution_fee		= $currency.$this->cart->format_number($props_caution_fee);
+
+                                        $get_promoter_com			= $this->Promoter_db->get_promoter_com($props_id);
+                                        $props_amount            	= $this->Admin_db->get_props_amount_by_id($props_id);
+                                        $promoter_perc				= ($get_promoter_com/100) * $props_amount;
+                                        $total_amount            	= $currency.$this->cart->format_number($props_amount - $promoter_perc);
+                                        $your_cut                	= $currency.$this->cart->format_number($promoter_perc);
                                     
                             ?>
                     <div class="col">
@@ -328,6 +334,16 @@ else{
                                 <p class="card-text"><?php echo $props_description;?></p>
                             </div>
                             <ul class="list-group list-group-flush">
+                                <li class="list-group-item">Price:
+                                    <span class="badge bg-dark">
+                                        <?php echo $props_price;?>
+                                    </span>
+                                </li>
+                                <li class="list-group-item">Commission:
+                                    <span class="badge bg-danger"> <?php echo $get_promoter_com;?>%</span> |
+                                    Your Cut:
+                                    <span class="badge bg-dark"><?php echo $your_cut;?></span>
+                                </li>
                                 <li class="list-group-item"><?php echo $get_state_name.','.$get_sub_state_name;?></li>
                                 <li class="list-group-item">
                                     <i class="fadeIn animated bx bx-bed" style="color: black;font-weight: bolder;"></i>
@@ -340,39 +356,28 @@ else{
                                 <li class="list-group-item">Purpose Type: <?php echo $props_purpose;?></li>
 
                                 <li class="list-group-item">
-                                    Property Live Status:
-                                    <?php if($props_live_status =='pending'){?>
-                                    <span class="badge bg-dark"><?php echo $props_live_status;?></span>
-                                    <?php }else if($props_live_status == 'approved'){?>
-                                    <span class="badge bg-success"><?php echo $props_live_status;?></span>
-                                    <?php }else if($props_live_status == 'rejected'){?>
-                                    <span class="badge bg-danger"><?php echo $props_live_status;?></span>
+                                    Property Availability Status:
+                                    <?php if($props_status =='available'){?>
+
+                                    <span class="badge bg-success"><?php echo strtoupper($props_status);?></span>
+
+                                    <?php }else if($props_status == 'unavailable'){?>
+
+                                    <span class="badge bg-danger"><?php echo strtoupper($props_status);?></span>
+
                                     <?php }?>
                                 </li>
 
                             </ul>
                             <div class="card-body">
-                                <a href="#read_more_<?php echo $props_id;?>" data-bs-toggle="modal"
+                                <!-- <a href="#read_more_<?php echo $props_id;?>" data-bs-toggle="modal"
+                                    class="card-link">View More</a> -->
+                                <a href="<?php echo base_url();?>Product/view_all_property_detail_extra/<?php echo $props_id;?>"
                                     class="card-link">View More</a>
                                 <a href="<?php echo base_url();?>Dashboard/manage_property_image/<?php echo $props_id;?>"
                                     class="card-link">Photos</a>
-                                <?php if($props_live_status == 'pending'){?>
-
-                                <a href="#approve_<?php echo $props_id;?>" data-bs-toggle="modal"
-                                    class="card-link">Approve</a>
                                 <a href="#reject_<?php echo $props_id;?>" data-bs-toggle="modal"
-                                    class="card-link">Reject</a>
-
-                                <?php }else if($props_live_status =='rejected'){?>
-
-                                <a href="#approve_<?php echo $props_id;?>" data-bs-toggle="modal"
-                                    class="card-link">Approve</a>
-
-                                <?php }else if($props_live_status =='approved'){ ?>
-                                <a href="#reject_<?php echo $props_id;?>" data-bs-toggle="modal"
-                                    class="card-link">Reject</a>
-                                <?php }?>
-
+                                    class="card-link">Promote Product</a>
 
                                 <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleFullScreenModal">Full Screen Modal</button> -->
                                 <!-- modal-sm -->
@@ -433,7 +438,8 @@ else{
                                                                                         style="margin-top:1%;">
                                                                                         <div class="col-md-6">
                                                                                             <span>Project Purpose:
-                                                                                            </span></div>
+                                                                                            </span>
+                                                                                        </div>
                                                                                         <div class="col-md-6"><span
                                                                                                 style="font-weight:bold;"><?php echo $props_purpose;?></span>
                                                                                         </div>
@@ -442,7 +448,8 @@ else{
                                                                                     <div class="row"
                                                                                         style="margin-top:1%;">
                                                                                         <div class="col-md-6">
-                                                                                            <span>Bedroom: </span></div>
+                                                                                            <span>Bedroom: </span>
+                                                                                        </div>
                                                                                         <div class="col-md-6"><span
                                                                                                 style="font-weight:bold;"><?php echo $props_bedrom;?></span>
                                                                                         </div>
@@ -462,7 +469,8 @@ else{
                                                                                         style="margin-top:1%;">
                                                                                         <div class="col-md-6">
                                                                                             <span>Types Of Property:
-                                                                                            </span></div>
+                                                                                            </span>
+                                                                                        </div>
                                                                                         <div class="col-md-6"><span
                                                                                                 style="font-weight:bold;"><?php echo $props_type_of_propery;?></span>
                                                                                         </div>
@@ -481,7 +489,8 @@ else{
                                                                                     <div class="row"
                                                                                         style="margin-top:1%;">
                                                                                         <div class="col-md-6">
-                                                                                            <span>Price: </span></div>
+                                                                                            <span>Price: </span>
+                                                                                        </div>
                                                                                         <div class="col-md-6"><span
                                                                                                 style="font-weight:bold;"><?php echo $props_price;?></span>
                                                                                         </div>
@@ -495,7 +504,8 @@ else{
                                                                                 </div>
                                                                                 <div class="row" style="margin-top:1%;">
                                                                                     <div class="col-md-12">
-                                                                                        <span>Description: </span></div>
+                                                                                        <span>Description: </span>
+                                                                                    </div>
                                                                                     <div class="col-md-12"><span
                                                                                             style="font-weight:bold;"><?php echo $props_description;?></span>
                                                                                     </div>
@@ -528,7 +538,8 @@ else{
                                                                             <div class="col-md-12">
                                                                                 <div class="row">
                                                                                     <div class="col-md-12">
-                                                                                        <span>Condition: </span></div>
+                                                                                        <span>Condition: </span>
+                                                                                    </div>
                                                                                     <div class="col-md-12"><span
                                                                                             style="font-weight:bold;"><?php echo $props_condition;?></span>
                                                                                     </div>
@@ -1118,7 +1129,6 @@ else{
                                                                                 Health -<?php echo $props_health;?>%
                                                                             </div>
                                                                         </div>
-
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1161,120 +1171,8 @@ else{
                                     </div>
                                 </div>
 
-                                <!-- Modal -->
-                                <div class="modal fade" id="edit_<?php echo $props_id;?>" tabindex="-1"
-                                    aria-hidden="true">
-                                    <div class="modal-dialog modal-lg">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Edit Property</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="row row-cols-auto g-3">
-                                                    <div class="col">
-                                                        <a href="<?php echo base_url();?>Dashboard/edit_basic/<?php echo $props_id;?>"
-                                                            class="btn-block btn btn-primary">Edit Basic Detail</a>
-                                                    </div>
-
-                                                    <div class="col"><a
-                                                            href="<?php echo base_url();?>Dashboard/edit_amenities/<?php echo $props_id;?>"
-                                                            class="btn btn-info btn-block">Edit Amenities Detail</a>
-                                                    </div>
 
 
-                                                    <div class="col">
-                                                        <a href="<?php echo base_url();?>Dashboard/edit_extra_detail/<?php echo $props_id;?>"
-                                                            class="btn btn-dark btn-block">Edit Extra Detail</a>
-                                                    </div>
-
-                                                </div>
-
-
-
-
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">Close</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                                <!-- Approve Property -->
-                                <div class="modal fade" id="approve_<?php echo $props_id;?>" tabindex="-1"
-                                    aria-hidden="true">
-                                    <div class="modal-dialog modal-sm">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Confirm Action</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <p>Are you sure you want to Approve this Property
-                                                    (<?php echo $props_name;?>)?
-
-
-
-
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">Close</button>
-                                                <a href="<?php echo base_url();?>Admin_panel/approve_property/<?php echo $props_id;?>/<?php echo $location;?>/<?php echo $props_id;?>/<?php echo $props_agent_id;?>"
-                                                    class="btn btn-danger">Yes, Delete</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                                <!-- Reject Property -->
-                                <div class="modal fade" id="reject_<?php echo $props_id;?>" tabindex="-1"
-                                    aria-hidden="true">
-                                    <div class="modal-dialog modal-sm">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Confirm Action</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="Close"></button>
-                                            </div>
-                                            <form action="<?php echo base_url();?>Admin_panel/reject_property"
-                                                method="post">
-                                                <div class="modal-body">
-                                                    <p>Are you sure you want to Change this Property
-                                                        (<?php echo $props_name;?>) Live Status to Rejected?
-
-
-
-
-                                                    <div class="form-group">
-                                                        <textarea name="message" id="message" required
-                                                            class="form-control"
-                                                            placeholder="Give Reason why this property its rejected?"></textarea>
-                                                    </div>
-
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">Close</button>
-                                                    <input type="hidden" name="props_id"
-                                                        value="<?php echo $props_id;?>" />
-                                                    <input type="hidden" name="agent_id"
-                                                        value="<?php echo $props_agent_id;?>" />
-                                                    <input type="hidden" name="location"
-                                                        value="<?php echo $location;?>" />
-                                                    <input type="submit" name="submit" class="btn btn-danger btn-sm"
-                                                        value="Yes, Continue" />
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
 
 
 
