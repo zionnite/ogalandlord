@@ -318,6 +318,33 @@ class Wallet_db extends My_Model{
         $this->fund_site_balance($new_office_percent);
     }
 
+    public function remove_from_site_earning($user_id,$agent_id,$props_id){
+        $get_referal_com        	= $this->Action->get_referal_com();
+		$get_office_com        		= $this->Action->get_agent_com();
+		$get_insurance_com        	= $this->Action->get_insurance_com();
+
+        //total_amount
+        
+		$total_amount            	= $this->Admin_db->get_props_amount_by_id($props_id);
+		$office_perc			 	= ($get_office_com/100) * $total_amount;
+
+		//inssurance percent
+		$insurance_perc				= ($get_insurance_com/100) * $office_perc;
+
+		//referal Percent
+		$referal_perc 				= ($get_referal_com/100) * $office_perc;
+
+        $check_if_user_was_refered 	=$this->Users_db->checkIfReferred($user_id);
+        if($check_if_user_was_refered){
+
+            $new_office_percent			= $office_perc - ($insurance_perc+$referal_perc);
+        }else{
+            $new_office_percent			= $office_perc - $insurance_perc;
+        }
+
+        $this->fund_site_balance(-$new_office_percent);
+    }
+
     public function update_user_wallet_pullout_success($sender_id,$props_id){
         $data      = array('trans_status'=>'success');
         $this->db->set($data);

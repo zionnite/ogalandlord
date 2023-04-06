@@ -2101,4 +2101,271 @@ class Admin_panel extends My_Controller {
         $data['content']        ='back_end/view_report';
 		$this->load->view($this->admin_layout,$data);
     }
+
+	/**
+	 * Lands
+	 */
+	public function add_land_location(){
+		$this->session_checker->my_session2();
+		$data['alert']			=$this->session->flashdata('alert');
+
+   
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+
+		$data['content']        ='back_end/add_land_location';
+		$this->load->view($this->admin_layout,$data);
+	}
+	
+	public function insert_land_location(){
+        if($this->input->post('submit')){	
+
+			$this->form_validation->set_rules('location','Land Location', array('required'),
+                                                                            array('required' => 'Your Location Name is Required'));
+
+		
+			$location     	=$this->input->post('location');            
+			
+            
+			if($this->form_validation->run() == FALSE){
+                $this->failed_alert_callbark('An Error occurred during creation of your Account!');
+
+				$data['user_id']         		=$this->session->userdata('user_id');
+				$data['user_name']         		=$this->session->userdata('user_name');
+				$data['phone_no']         		=$this->session->userdata('phone_no');
+				$data['user_img']         		=$this->session->userdata('user_img');
+				$data['sex']         			=$this->session->userdata('sex');
+				$data['age']         			=$this->session->userdata('age');
+				$data['email']         			=$this->session->userdata('email');
+				$data['full_name']         		=$this->session->userdata('full_name');
+				$data['user_status']         	=$this->session->userdata('status');
+
+
+				$data['content']        ='back_end/add_land_location';
+				$this->load->view($this->admin_layout,$data);
+
+			}else{
+
+				$insert	=$this->Subscription_db->add_land_location($location);
+                if($insert	==TRUE){
+                         
+					$this->success_alert_callbark('Land Location Added');
+					redirect('Admin_panel/view_landlocation');
+                }else{
+                            
+					$this->failed_alert_callbark('Database Busy, Could not perform operation, Pls Try Again Later!');
+					redirect('Admin_panel/add_land_location');
+                }
+			}
+		}else{
+			
+			$this->failed_alert_callbark('Please Use The Submit button to continue');
+			redirect('Admin_panel/add_land_location');
+		}
+    }
+
+
+	public function view_landlocation(){
+		$this->session_checker->my_session2();
+		$data['alert']			=$this->session->flashdata('alert');
+
+   
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+
+		$data['content']        ='back_end/view_landlocation';
+		$this->load->view($this->admin_layout,$data);
+	}
+
+	public function remove_landlocation($id){
+		$action		= $this->Subscription_db->remove_landlocation($id);
+		if($action){
+			$this->success_alert_callbark('Manager Removed From List');
+		}else{
+			$this->failed_alert_callbark('Database Busy, Could not perform operation, Pls Try Again Later!');
+		}
+		redirect('Admin_panel/view_landlocation');
+	}
+
+
+	public function create_subscription_plan(){
+		$this->session_checker->my_session2();
+		$data['alert']			=$this->session->flashdata('alert');
+
+   
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+
+		$data['content']        		='back_end/create_subscription_plan';
+		$this->load->view($this->admin_layout,$data);
+	}
+
+	public function generate_subscription_plan(){
+        if($this->input->post('submit')){	
+
+			$this->form_validation->set_rules('plan_name','Plan Name', array('required'),
+                                                                            array('required' => 'Plan Name is Required'));
+
+			$this->form_validation->set_rules('description','Description','required', array('required' => 'Description is Required'));
+
+			$this->form_validation->set_rules('interval','interval', array('required'),
+                                                                            array('required' => 'interval is  Required'));
+
+			$this->form_validation->set_rules('amount','Password','required', array('required' => 'Amount is Required'));
+
+			$this->form_validation->set_rules('invoice_limit','invoice_limit','required', array('required' => 'Invoice Limit is required '));
+
+			$this->form_validation->set_rules('location','location','required', array('required' => 'You need to Select location'));
+
+		
+			$plan_name     			=$this->input->post('plan_name');            
+			$description     		=$this->input->post('description');            
+			$interval     			=$this->input->post('interval');            
+			$amount	     			=$this->input->post('amount');            
+			$invoice_limit	     	=$this->input->post('invoice_limit');            
+			$location	     		=$this->input->post('location');            
+
+			
+			if($this->form_validation->run() == FALSE){
+                $this->failed_alert_callbark('An Error occurred during creation of your Account!');
+
+				$data['user_id']         		=$this->session->userdata('user_id');
+				$data['user_name']         		=$this->session->userdata('user_name');
+				$data['phone_no']         		=$this->session->userdata('phone_no');
+				$data['user_img']         		=$this->session->userdata('user_img');
+				$data['sex']         			=$this->session->userdata('sex');
+				$data['age']         			=$this->session->userdata('age');
+				$data['email']         			=$this->session->userdata('email');
+				$data['full_name']         		=$this->session->userdata('full_name');
+				$data['user_status']         	=$this->session->userdata('status');
+
+
+				$data['content']        ='back_end/create_subscription_plan';
+				$this->load->view($this->admin_layout,$data);
+
+			}else{
+
+				$insert	=$this->Subscription_db->create_subscription_plan($plan_name,$description,$interval,$amount,$invoice_limit,$location);
+            	if($insert	!=false){
+
+					$this->generate_plan($insert,$plan_name,$description,$interval,$amount,$invoice_limit,$location);
+                         
+					
+					
+                }else{
+                            
+					$this->failed_alert_callbark('Database Busy, Could not perform operation, Pls Try Again Later!');
+					redirect('Admin_panel/create_subscription_plan');
+                }
+			}
+		}else{
+			
+			$this->failed_alert_callbark('Please Use The Submit button to continue');
+			redirect('Admin_panel/create_subscription_plan');
+		}
+    }
+	
+
+	public function subscription_plan(){
+		$this->session_checker->my_session2();
+		$data['alert']			=$this->session->flashdata('alert');
+
+   
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+
+		$data['content']        ='back_end/view_landlocation';
+		$this->load->view($this->admin_layout,$data);
+	}
+
+	public function generate_plan($id,$plan_name,$description,$interval,$amount,$invoice_limit,$location){
+		$secure_key   =$this->Action->get_private_live_key();
+
+		$url = "https://api.paystack.co/plan";
+
+		$fields = [
+			'name' => $plan_name,
+			'interval' => $interval, 
+			'amount' => $amount*100,
+			'description' => $description,
+			'invoice_limit'	=> $invoice_limit,
+		];
+
+		$fields_string = http_build_query($fields);
+
+		//open connection
+		$ch = curl_init();
+		
+		//set the url, number of POST vars, POST data
+		curl_setopt($ch,CURLOPT_URL, $url);
+		curl_setopt($ch,CURLOPT_POST, true);
+		curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+			"Authorization: Bearer $secure_key",
+			"Cache-Control: no-cache",
+		));
+		
+		//So that curl_exec returns the contents of the cURL; rather than echoing it
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER, true); 
+		
+		//execute post
+		//execute post
+        $response = curl_exec($ch);
+
+		
+		// print_r($response);
+		$result  = json_decode($response, true);
+        $result  = array_change_key_case($result, CASE_LOWER);
+
+
+        $status		=$result['status'];
+        if($status){
+            $v_data		=$result['data'];
+			
+			$plan_code			=$v_data['plan_code'];
+			$plan_id 			=$v_data['id'];
+
+			$this->Subscription_db->update_subscription_plan($id, $plan_code, $plan_id);
+
+			$this->success_alert_callbark('Plan Added');
+			redirect('Admin_panel/subscription_plan');
+        }
+
+		$this->success_alert_callbark('Plan Added, could not update Plan subscription code');
+		redirect('Admin_panel/subscription_plan');
+
+	}
+
 }

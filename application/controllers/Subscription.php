@@ -5,225 +5,560 @@ class Subscription extends My_Controller{
     }
 
 
-        
-    public function make_payment(){
-        $data['alert']		=	$this->session->flashdata('alert');
-        
-        $data['email']         			=$this->session->userdata('email');
-		$data['full_name']         		=$this->session->userdata('name');
-		$data['phone_no']         		=$this->session->userdata('phone');
-        
-        $data['content']    ='make_donation_amount';
-		$this->load->view($this->layout_2,$data);
-	}
-    
-    
-    public function verify_payment(){
-        //http://localhost/ecard9jaPlus/Profile/verify_payment?status=successful&tx_ref=%2B2349034286339-1606327921&transaction_id=332165918
-        $public_key   =$this->Admin_db->get_public_live_key();
-        $secure_key   =$this->Admin_db->get_private_live_key();
-        
-        $p_status       =$this->input->get('status');
-        $p_tx_ref       =$this->input->get('tx_ref');
-        $p_trans_id     =$this->input->get('transaction_id');
-        
-        $curl = curl_init();
+    public function view_plan(){
+        $this->session_checker->my_session();
+        $this->chat_online_tracker->check();
+        $data['alert']			=$this->session->flashdata('alert');
 
-        curl_setopt_array($curl, array(
-          CURLOPT_URL => "https://api.flutterwave.com/v3/transactions/".$p_trans_id."/verify",
-          CURLOPT_RETURNTRANSFER => true,
-          CURLOPT_ENCODING => "",
-          CURLOPT_MAXREDIRS => 10,
-          CURLOPT_TIMEOUT => 0,
-          CURLOPT_FOLLOWLOCATION => true,
-          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-          CURLOPT_CUSTOMREQUEST => "GET",
-          CURLOPT_HTTPHEADER => array(
-            "Content-Type: application/json",
-            "Authorization: Bearer ".$secure_key
-          ),
+      
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+        
+        $data['content']                ='back_end/view_plan';
+        
+		$this->load->view($this->admin_layout,$data);
+	}
+
+    public function join_sub($dis_id=NULL, $plan_id=NULL, $plan_code=NULL, $plan_amount=NULL, $email=NULL){
+        $secure_key   =$this->Action->get_private_live_key();
+        $url = "https://api.paystack.co/transaction/initialize";
+
+        $fields = [
+            'email' => $email,
+            'amount' => $plan_amount,
+            'plan' => $plan_code
+        ];
+
+        $fields_string = http_build_query($fields);
+
+        //open connection
+        $ch = curl_init();
+        
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch,CURLOPT_URL, $url);
+        curl_setopt($ch,CURLOPT_POST, true);
+
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0); 
+        curl_setopt($ch, CURLOPT_TIMEOUT, 400); 
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Authorization: Bearer $secure_key",
+            "Cache-Control: no-cache",
         ));
 
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 16 * 1000); // it's in milliseconds
-        curl_setopt($curl, CURLOPT_TIMEOUT, 16 * 1000);
-        $response = curl_exec($curl);
-        $result  = json_decode($response, true);
+
+        
+        
+        //So that curl_exec returns the contents of the cURL; rather than echoing it
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER, true); 
+     
+        $response = curl_exec($ch);
+        // curl_close($ch);
+
+		
+		// print_r($response);
+		$result  = json_decode($response, true);
         $result  = array_change_key_case($result, CASE_LOWER);
 
-        curl_close($curl);
-        //echo $response;
-        
-        $v_status           = $result['status'];
-        $v_data             = $result['data'];
-        $v_customer         = $v_data['customer'];
-        
-        if($v_status =='success'){
-            $v_amount           = $v_data['amount'];
-            
-            $v_name             =$v_customer['name'];
-            $v_phone            =$v_customer['phone_number'];
-            $v_email            =$v_customer['email'];
-            
-            $action             =$this->Admin_db->donation_transaction($v_name,$v_phone,$v_email,$v_amount,$p_tx_ref,$p_trans_id);
-            if($action == true){
-                $data['alert']	='<div class="alert alert-success" role="alert"><strong>Success:</strong>Thanks, Your Donation was Recieved! </div>';
-                $this->session->set_flashdata('alert',$data['alert']);
-            }else{
-                $data['alert']	='<div class="alert alert-warning" role="alert"><strong>Success:</strong>Oops!! Your Transaction was successful but we have not Recieved your Donation Yet, Thanks! </div>';
-                $this->session->set_flashdata('alert',$data['alert']);
-            }
-        }else{
-            $data['alert']	='<div class="alert alert-danger" role="alert"><strong>Success:</strong>Oops!! Transaction was not successful! </div>';
-            $this->session->set_flashdata('alert',$data['alert']);
+        $status     = $result['status'];
+
+        if($status){
+            $v_data		=$result['data'];
+			
+			$p_url			=$v_data['authorization_url'];
+			
+			redirect($p_url,'refresh');
         }
-        
-        redirect('MakeDonation');
-        
     }
 
 
-    public function flutterwave_create_bulk_transfer(){
-        $public_key   =$this->Admin_db->get_public_live_key();
-        $secure_key   =$this->Admin_db->get_private_live_key();
+
+    public function join_sub_2(){
+        
+        $email  = 'ripenaira@gmail.com';
+        $secure_key   =$this->Action->get_private_live_key();
+        $url = "https://api.paystack.co/transaction/initialize";
+
+        $ref_timer  = time();
+
+        $fields = [
+            'email' => $email,
+            'amount' => "500",
+            'plan' => "PLN_p3iae6fmwmr9q1v",
+            'reference' => $ref_timer,
+            'callback_url'      => base_url().'Subscription/very_sub',
+
+        ];
+
+        $fields_string = http_build_query($fields);
+
+        //open connection
+        $ch = curl_init();
+        
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch,CURLOPT_URL, $url);
+        curl_setopt($ch,CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0); 
+        curl_setopt($ch, CURLOPT_TIMEOUT, 400); 
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Authorization: Bearer $secure_key",
+            "Cache-Control: no-cache",
+        ));
+        
+        //So that curl_exec returns the contents of the cURL; rather than echoing it
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER, true); 
+        
+        //execute post
+        $response = curl_exec($ch);
+        // curl_close($ch); //update
+
+		
+		// print_r($response);
+		$result  = json_decode($response, true);
+        $result  = array_change_key_case($result, CASE_LOWER);
+
+        $status     = $result['status'];
+
+        //$this->create_customer($email);
+
+        $status     = $result['status'];
+
+        if($status){
+            $v_data		=$result['data'];
+			
+			$p_url			=$v_data['authorization_url'];
+			
+			redirect($p_url,'refresh');
+        }
+
+    }
+
+    public function very_sub($nef=NULL){
+        $secure_key   =$this->Action->get_private_live_key();
+
+        $ref    = $this->input->get('reference');
 
         $curl = curl_init();
-
+        
         curl_setopt_array($curl, array(
-        CURLOPT_URL => 'https://api.flutterwave.com/v3/bulk-transfers/',
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => '',
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 0,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => 'POST',
-        CURLOPT_POSTFIELDS =>'{
-            "title": "Test_SUBSCRIPTION_NG_Bulk_Transfers_1",
-            "bulk_data": [
-                {
-                    "bank_code": "058",
-                    "account_number": "0241459758",
-                    "amount": 1900,
-                    "currency": "NGN",
-                    "narration": "Test transfer to F4B Developers",
-                    "reference": "bulk_Transfers_0019_PMCK",
-                    "meta": [
-                        {
-                        "first_name": "F4B",
-                        "last_name": "Developers",
-                        "email": "developers@flutterwavego.com",
-                        "mobile_number": "+23457558595",
-                        "recipient_address": "234 Kings road, Cape Town"
-                        }
-                    ]
-                },
-                {
-                    "bank_code": "FNB",
-                    "account_number": "0031625807099",
-                    "amount": 3200,
-                    "currency": "ZAR",
-                    "narration": "Test transfer to Support",
-                    "reference": "bulk_Transfers_0020_PMCK",
-                    "meta": [
-                        {
-                        "first_name": "Flutterwave",
-                        "last_name": "Support",
-                        "email": "support@flutterwavego.com",
-                        "mobile_number": "+23457558595",
-                        "recipient_address": "234 Kings road, Cape Town"
-                        }
-                    ]
-                },
-                {
-                    "bank_code": "FNB",
-                    "account_number": "0031625807099",
-                    "amount": 6950,
-                    "currency": "ZAR",
-                    "narration": "Test transfer to Flutterwave Developers",
-                    "reference": "bulk_Transfers_0021_PMCK",
-                    "meta": [
-                        {
-                        "first_name": "Flutterwave",
-                        "last_name": "Developers",
-                        "email": "developers@flutterwavego.com",
-                        "mobile_number": "+23457558595",
-                        "recipient_address": "234 Kings road, Cape Town"
-                        }
-                    ]
-                },
-                {
-                    "bank_code": "FNB",
-                    "account_number": "0031625807099",
-                    "amount": 1500,
-                    "currency": "ZAR",
-                    "narration": "Test transfer to Wavers",
-                    "reference": "bulk_Transfers_0022_PMCK",
-                    "meta": [
-                        {
-                        "first_name": "Wavers",
-                        "last_name": "N/A",
-                        "email": "hi@flutterwavego.com",
-                        "mobile_number": "+23457558595",
-                        "recipient_address": "234 Kings road, Cape Town"
-                        }
-                    ]
-                }
-            ]
-        }',
-        CURLOPT_HTTPHEADER => array(
-            'Content-Type: application/json',
-            "Authorization: Bearer ".$secure_key
-        ),
+            CURLOPT_URL => "https://api.paystack.co/transaction/verify/$ref",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 400,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+            "Authorization: Bearer $secure_key",
+            "Cache-Control: no-cache",
+            ),
         ));
-
+        
         $response = curl_exec($curl);
 
-        curl_close($curl);
-        echo $response;
+		$result  = json_decode($response, true);
+        $result  = array_change_key_case($result, CASE_LOWER);
+
+        $status     = $result['status'];
+
+
+
+        if($status){
+            $customer_code      = $result['data']['customer']['customer_code'];
+            $customer_email     = $result['data']['customer']['email'];
+
+
+            //plan
+            $plan_id            = $result['data']['plan_object']['id'];
+            $plan_code          = $result['data']['plan_object']['plan_code'];
+            $plan_name          = $result['data']['plan_object']['name'];
+            $plan_amount        = $result['data']['plan_object']['amount'];
+            $plan_interval      = $result['data']['plan_object']['interval'];
+
+            //authorization
+            $auth_bin           = $result['data']['authorization']['bin'];
+            $auth_last4         = $result['data']['authorization']['last4'];
+            $auth_exp_month     = $result['data']['authorization']['exp_month'];
+            $auth_exp_year      = $result['data']['authorization']['exp_year'];
+            $auth_card_type     = $result['data']['authorization']['card_type'];
+
+            $action = $this->Subscription_db->add_subscriber_detail(
+                $customer_email,$customer_code,
+                $plan_id, $plan_code,$plan_name,$plan_amount,$plan_interval,
+                $auth_bin, $auth_last4, $auth_exp_month, $auth_exp_year, $auth_card_type
+            );
+
+            if($action == 'true'){
+                $this->success_alert_callbark('Your subscription was successful');
+                redirect('Subscription/your_plan');
+            }else if($action == 'false'){
+                $this->failed_alert_callbark('Your subscription was successful, could not update your detail, please message admin for support');
+                redirect('Subscription/your_plan');
+            }else if($action == 'user_not_exist'){
+                $this->failed_alert_callbark('Your subscription was successful, could not update your detail, becuase this user email does not exist on our database, please message admin for support');
+                redirect('Subscription/your_plan');
+            }
+
+            
+        }else{
+            $this->failed_alert_callbark('Your subscription was not successful');
+            redirect('Subscription/your_plan');
+        }
+
     }
-
-    public function_flutter_wave_webhook(){
-
-        // Retrieve the request's body
-        $body = @file_get_contents("php://input");
-
-        // retrieve the signature sent in the reques header's.
-        $signature = (isset($_SERVER['verif-hash']) ? $_SERVER['verif-hash'] : '');
-
-        /* It is a good idea to log all events received. Add code *
-        * here to log the signature and body to db or file       */
-
-        if (!$signature) {
-            // only a post with rave signature header gets our attention
-            exit();
-        }
-
-        // Store the same signature on your server as an env variable and check against what was sent in the headers
-        $local_signature = getenv('SECRET_HASH');
-
-        // confirm the event's signature
-        if( $signature !== $local_signature ){
-        // silently forget this ever happened
-        exit();
-        }
-
-        http_response_code(200); // PHP 5.4 or greater
-        // parse event (which is json string) as object
-        // Give value to your customer but don't give any output
-        // Remember that this is a call from rave's servers and 
-        // Your customer is not seeing the response here at all
-
-        $response = json_decode($body);
-        if ($response->body->status == 'successful') {
-            # code...
-            // Update your database and set the transaction status to successful
-        }
-        exit();
-    }
-   
-    public function_card_tokenization(){
         
+    public function make_subscription(){
+        $this->session_checker->my_session();
+        $this->chat_online_tracker->check();
+        $data['alert']			=$this->session->flashdata('alert');
+
+      
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+        
+        $data['content']    ='back_end/make_subscription';
+		$this->load->view($this->admin_layout,$data);
+	}
+
+
+
+
+    public function list_sub($customer){
+        $secure_key   =$this->Action->get_private_live_key();
+        
+
+        $curl = curl_init();
+        
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => "https://api.paystack.co/subscription?customer=$customer&perPage=5000&plan=780958",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30*60*60,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+            "Authorization: Bearer $secure_key",
+            "Cache-Control: no-cache",
+            ),
+        ));
+        
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+        curl_close($curl);
+        
+        if ($err) {
+            echo "cURL Error #:" . $err;
+        } else {
+            echo $response;
+        }
+
+     
+    }
+    
+
+    
+    public function djoin_sub(){
+        $secure_key   =$this->Action->get_private_live_key();
+        $url = "https://api.paystack.co/subscription";
+
+        $fields = [
+            'customer' => "CUS_q5vxhkn360sw987",
+            'plan' => "PLN_rbymo57w1qjzict"
+        ];
+
+        $fields_string = http_build_query($fields);
+
+        //open connection
+        $ch = curl_init();
+        
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch,CURLOPT_URL, $url);
+        curl_setopt($ch,CURLOPT_POST, true);
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Authorization: Bearer $secure_key",
+            "Cache-Control: no-cache",
+        ));
+        
+        //So that curl_exec returns the contents of the cURL; rather than echoing it
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER, true); 
+        
+        //execute post
+        $result = curl_exec($ch);
+        curl_close($ch);
+        echo $result;
+    }
+
+
+    public function date_me($number=NULL, $type){
+
+        // $date = strtotime("+".$days." days", strtotime($date));
+        // return  date("Y-m-d", $date);
+
+        $date = strtotime("+".$number." ". $type, strtotime(date('Y-m-d')));
+        echo 'Date is Now: '.  date("Y-m-d", $date);
+
+        echo br();
+
+        
+
+        echo 'Date is Now: '. date('Y-m-d', strtotime("+".$number." ".$type));
+
+    }
+
+    public function get_sub(){
+        $secure_key   =$this->Action->get_private_live_key();
+
+        $curl = curl_init();
+        
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => "https://api.paystack.co/subscription/SUB_elguzwb1sybfj8x",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+            "Authorization: Bearer $secure_key",
+            "Cache-Control: no-cache",
+            ),
+        ));
+        
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        
+        if ($err) {
+            echo "cURL Error #:" . $err;
+        } else {
+            echo $response;
+        }
+
+    }
+
+
+    public function create_customer($email=NULL){
+        $url    = 'https://api.paystack.co/customer';
+
+        $secure_key   =$this->Action->get_private_live_key();
+
+        $fields = [
+            'email' => $email,
+        ];
+
+        $fields_string = http_build_query($fields);
+
+        //open connection
+        $ch = curl_init();
+        
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch,CURLOPT_URL, $url);
+        curl_setopt($ch,CURLOPT_POST, true);
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Authorization: Bearer $secure_key",
+            "Cache-Control: no-cache",
+        ));
+        
+        //So that curl_exec returns the contents of the cURL; rather than echoing it
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER, true); 
+        
+        //execute post
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+		
+		// print_r($response);
+		$result  = json_decode($response, true);
+        $result  = array_change_key_case($result, CASE_LOWER);
+
+        $status     = $result['status'];
+
+        if($status){
+            $v_data		            = $result['data'];
+			echo $customer_code			= $v_data['customer_code'];
+			
+			// $this->Subscriber_db->updater_subscriber_detail($id, $email, $customer_code);
+        }
+    }
+
+
+    public function your_plan(){
+        $this->session_checker->my_session();
+        $this->chat_online_tracker->check();
+        $data['alert']			=$this->session->flashdata('alert');
+
+      
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+        
+        $data['content']                ='back_end/your_plan';
+        
+		$this->load->view($this->admin_layout,$data);
+	}
+
+    public function disable_sub($user_id=NULL, $plan_code=NULL, $sub_code=NULL, $email_token=NULL){
+        $secure_key   =$this->Action->get_private_live_key();
+
+        $url = "https://api.paystack.co/subscription/disable";
+
+        $fields = [
+            'code' => $sub_code,
+            'token' => $email_code
+        ];
+
+        $fields_string = http_build_query($fields);
+
+        //open connection
+        $ch = curl_init();
+        
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch,CURLOPT_URL, $url);
+        curl_setopt($ch,CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 400); 
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Authorization: Bearer $secure_key",
+            "Cache-Control: no-cache",
+        ));
+        
+        //So that curl_exec returns the contents of the cURL; rather than echoing it
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER, true); 
+        //execute post
+        $response = curl_exec($ch);
+
+        
+		$result  = json_decode($response, true);
+        $result  = array_change_key_case($result, CASE_LOWER);
+
+        $status     = $result['status'];
+
+        if($status){
+
+            //update subscriber
+            $action     = $this->Subscription_db->disable_sub($user_id, $plan_code, $sub_code, $email_token);
+            if($action){
+
+                $this->success_alert_callbark('Your subscription is now disabled');
+                redirect('Subscription/your_plan');
+            }else{
+                $this->failed_alert_callbark('Your subscription is disabled but could not update information');
+                redirect('Subscription/your_plan');
+            }
+
+        }
+        else{
+            $this->failed_alert_callbark('Could not disable subscription please try again later!');
+            redirect('Subscription/your_plan');
+        }
+
+
+    }
+
+    public function request_card_update($sub_code=NULL){
+        $secure_key   =$this->Action->get_private_live_key();
+
+        $curl = curl_init();
+        
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => "https://api.paystack.co/subscription/$sub_code/manage/link",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 400,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+            "Authorization: Bearer $secure_key",
+            "Cache-Control: no-cache",
+            ),
+        ));
+        
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+
+        
+
+		$result  = json_decode($response, true);
+        $result  = array_change_key_case($result, CASE_LOWER);
+
+        $status     = $result['status'];
+
+        if($status){
+            $v_data		=$result['data'];
+			$p_url	    =$v_data['link'];
+			
+			redirect($p_url,'refresh');
+
+        }
+        else{
+            $this->failed_alert_callbark('Could not perform opearation, please try again later!');
+            redirect('Subscription/your_plan');
+        }
+
+    }
+
+    public function send_request_to_email($sub_code=NULL){
+
+        $secure_key   =$this->Action->get_private_live_key();
+        $url = "https://api.paystack.co/subscription/$sub_code/manage/email";
+
+
+        //open connection
+        $ch = curl_init();
+        
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch,CURLOPT_URL, $url);
+        curl_setopt($ch,CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Authorization: Bearer $secure_key",
+            "Cache-Control: no-cache",
+        ));
+        
+        //So that curl_exec returns the contents of the cURL; rather than echoing it
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER, true); 
+        
+        $response = curl_exec($ch);
+        $err = curl_error($curl);
+
+		$result  = json_decode($response, true);
+        $result  = array_change_key_case($result, CASE_LOWER);
+
+        $status     = $result['status'];
+
+        if($status){
+           
+
+        }
+        else{
+            
+        }
+
     }
 
 }

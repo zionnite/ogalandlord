@@ -34,7 +34,7 @@ class Message extends My_Controller {
         
         $offset	=$this->uri->segment(3);
 		$total	=$this->Chat_db->count_chat_head($data['user_id']);
-		$config['base_url'] = base_url().'Message/quick_msg';
+		$config['base_url'] = base_url().'Message/view_message';
 		$config['total_rows'] =$total;
 		$config['per_page'] = 50;
 		$config['first_link'] = '<li>First</li>';

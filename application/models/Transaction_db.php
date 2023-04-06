@@ -397,6 +397,22 @@ class Transaction_db extends My_Model{
         }
         return false;
     }
+
+    public function update_complete_transaction($user_id, $props_id){
+
+        $data   =array('trans_type'=>'complete_withdraw','status'=>'cancel');
+        $this->db->set($data);
+
+        $this->db->where('user_id',$user_id);
+        $this->db->where('props_id',$props_id);
+        $this->db->where('trans_type','complete_transafer');
+        $this->db->where('status','success');
+        $this->db->update('transaction');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+    }
     /**
     * End Webhook Activities
     */

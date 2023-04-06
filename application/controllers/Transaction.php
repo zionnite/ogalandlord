@@ -257,6 +257,8 @@ class Transaction extends My_Controller {
 		
 
 		if($isUserPromoterRefered){
+
+			
 			$promoter_id					= $this->Promoter_db->getPromoterIdByRefereId($user_id, $props_id);
 			$promoter_bank_code				=$this->Users_db->get_user_bank_code($promoter_id);
 			$promoter_bank_name				=$this->Users_db->get_user_bank_name($promoter_id);
@@ -412,6 +414,11 @@ class Transaction extends My_Controller {
 
 				
 			}else{
+
+				// echo 'My account name -:'.$my_account_name.' -account number:- '.$my_account_num.br();
+				// echo 'Agent account name -:'.$agent_account_name.' -account number:- '.$agent_account_num.br();
+				// echo 'issurance account name -:'.$insurance_account_name.' -account number:- '.$insurance_account_number.br();
+				// echo 'Promoter account name -:'.$promoter_bank_name.' -account number:- '.$promoter_account_num.br();
 
 				$fields =array(
 					"batch"	=>array(
@@ -719,7 +726,7 @@ class Transaction extends My_Controller {
 		
 		
 
-		$url = "https://api.paystack.co/transfer/bulk";
+		
 		
 
 		$props_amount            	= $this->Admin_db->get_props_amount_by_id($props_id);
@@ -1018,6 +1025,7 @@ class Transaction extends My_Controller {
 			}
 		}
 
+		$url = "https://api.paystack.co/transfer/bulk";
 
 		$fields_string = http_build_query($fields);
 
@@ -1040,12 +1048,16 @@ class Transaction extends My_Controller {
 		$response = curl_exec($ch);
 
 		
-		// print_r($fields);
+		// print_r($response);
 		$result  = json_decode($response, true);
         $result  = array_change_key_case($result, CASE_LOWER);
 		// echo $response;
 
+		// print_r($result);
+
 		$status		=$result['status'];
+
+		// print_r($status);
 		if($status){
 			//echo 'ok'; //transfer added to queei
 			$trans_type		='complete_withdraw';
