@@ -39,12 +39,37 @@
 
                 </ul>
                 <div class="d-grid">
-                    <a href="<?php echo base_url();?>Subscription/request/<?php echo $dis_id;?>/<?php echo $plan_id;?>/<?php echo $plan_code;?>"
+                    <a href="#request_<?php echo $dis_id;?>" data-bs-toggle="modal"
                         class="btn btn-danger my-2 radius-30">Subscribe Now</a>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="request_<?php echo $dis_id;?>" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to Subscribe to this Plan
+                        (<?php echo $plan_name;?>)?
+
+
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="<?php echo base_url();?>Subscription/join_sub/<?php echo $user_id;?>/<?php echo $plan_id;?>/<?php echo $plan_code;?>"
+                        class="btn btn-danger">Yes, Continue</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <?php 
 

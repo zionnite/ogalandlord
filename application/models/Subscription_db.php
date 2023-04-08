@@ -253,7 +253,7 @@ class Subscription_db extends My_Model{
     public function insert_subscription(
         $plan_id, $plan_code, $plan_name, $plan_amount, $plan_interval,
         $customer_code, $customer_email, 
-        $auth_bin, $auth_last4, $auth_exp_month, $auth_exp_year, $auth_card_type){
+        $auth_bin, $auth_last4, $auth_exp_month, $auth_exp_year, $auth_card_type, $status){
 
         $user_id    = $this->Users_db->get_user_id_by_email($customer_email);
 
@@ -269,6 +269,7 @@ class Subscription_db extends My_Model{
             'month'                     =>  date('M'),
             'year'                      =>  date('Y'),
             'time'                      =>  time(),
+            'status'                    =>  $status,
         );
 
         $this->db->set($data);
@@ -345,8 +346,11 @@ class Subscription_db extends My_Model{
         }
         return false;
     }
-    public function get_subscriber($user_id){
+
+    //subscriber 
+    public function get_subscriber($user_id, $plan_id){
         $this->db->where('user_id', $user_id);
+        $this->db->where('plan_id', $plan_id);
         $query      = $this->db->get('subscriber_list');
         if($query->num_rows() > 0){
             return $query->result_array();
@@ -354,4 +358,151 @@ class Subscription_db extends My_Model{
         return false;
     }
 
+    public function get_subscriber_2($user_id, $offset,$per_page){
+        $this->db->where('user_id', $user_id);
+        $this->db->limit($per_page,$offset);
+        $query      = $this->db->get('subscriber_list');
+        if($query->num_rows() > 0){
+            return $query->result_array();
+        }
+        return false;
+    }
+
+    public function count_subscriber($user_id){
+		return $this->db->from('subscriber_list')->where('user_id', $user_id)->count_all_results();
+	}
+
+
+    
+
+    //subscription
+    public function count_subscription($user_id, $plan_id){
+		return $this->db->from('subscription')
+        ->where('user_id', $user_id)
+        ->where('plan_id', $plan_id)
+        ->count_all_results();
+	}
+
+    public function count_subscription_success($user_id, $plan_id){
+		return $this->db->from('subscription')
+            ->where('user_id', $user_id)
+            ->where('plan_id', $plan_id)
+            ->where('status','success')->count_all_results();
+	}
+
+    public function count_subscription_failed($user_id, $plan_id){
+		return $this->db->from('subscription')
+            ->where('user_id', $user_id)
+            ->where('plan_id', $plan_id)
+            ->where('status','failed')->count_all_results();
+	}
+
+    public function get_subscription($user_id, $plan_id, $offset,$per_page){
+        $this->db->where('user_id', $user_id);
+        $this->db->where('plan_id', $plan_id);
+        $this->db->limit($per_page,$offset);
+        $query  =$this->db->get('subscription');
+        if($query->num_rows() > 0){
+            return $query->result_array();
+        }
+        return false;
+    }
+    
+
+    public function get_subscription_code_by_plan_code($plan_code){
+        $this->db->where('plan_code', $plan_code);
+        $query  = $this->db->get('subscriber_list');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['subscription_code'];
+            }
+        }
+        return false;
+    }
+
+    public function get_plan_id_by_sub_code($sub_code){
+        $this->db->where('subscription_code', $sub_code);
+        $query  = $this->db->get('subscriber_list');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_id'];
+            }
+        }
+        return false;
+    }
+
+    public function get_plan_code_by_sub_code($sub_code){
+        $this->db->where('subscription_code', $sub_code);
+        $query  = $this->db->get('subscriber_list');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_code'];
+            }
+        }
+        return false;
+    }
+
+
+    public function get_plan_amount_by_plan_code($plan_code){
+        $this->db->where('plan_code', $plan_code);
+        $query  = $this->db->get('subscription_plan');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_amount'];
+            }
+        }
+        return false;
+    }
+
+
+    public function get_plan_name_by_sub_code($sub_code){
+        $this->db->where('subscription_code', $sub_code);
+        $query  = $this->db->get('subscriber_list');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_name'];
+            }
+        }
+        return false;
+    }
+
+    public function get_plan_amount_by_sub_code($sub_code){
+        $this->db->where('subscription_code', $sub_code);
+        $query  = $this->db->get('subscriber_list');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_amount'];
+            }
+        }
+        return false;
+    }
+
+    public function get_plan_interval_by_sub_code($sub_code){
+        $this->db->where('subscription_code', $sub_code);
+        $query  = $this->db->get('subscriber_list');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_interval'];
+            }
+        }
+        return false;
+    }
+
+
+    public function revenue_amount($user_id, $plan_id){
+        $this->db->where('user_id',$user_id);
+        $this->db->where('plan_id',$plan_id);
+        $this->db->where('status','success');
+	
+		$this->db->select_sum('amount');
+		$query		=$this->db->get('subscription');
+		if($query->num_rows() > 0){
+			foreach($query->result_array() as $row){
+				return $row['amount'];
+			}
+		}
+		return 0;
+    }
+
+    
 }

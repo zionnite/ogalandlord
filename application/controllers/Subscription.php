@@ -26,7 +26,7 @@ class Subscription extends My_Controller{
 		$this->load->view($this->admin_layout,$data);
 	}
 
-    public function join_sub($dis_id=NULL, $plan_id=NULL, $plan_code=NULL, $plan_amount=NULL, $email=NULL){
+    public function _join_sub_2($dis_id=NULL, $plan_id=NULL, $plan_code=NULL, $plan_amount=NULL, $email=NULL){
         $secure_key   =$this->Action->get_private_live_key();
         $url = "https://api.paystack.co/transaction/initialize";
 
@@ -80,9 +80,13 @@ class Subscription extends My_Controller{
 
 
 
-    public function join_sub_2(){
+    public function join_sub($user_id=NULL, $plan_id=NULL, $plan_code=NULL){
         
-        $email  = 'ripenaira@gmail.com';
+        $email              = $this->Users_db->get_email_by_id($user_id);
+        $plan_amount        = $this->Subscription_db->get_plan_amount_by_plan_code($plan_code);
+
+
+
         $secure_key   =$this->Action->get_private_live_key();
         $url = "https://api.paystack.co/transaction/initialize";
 
@@ -90,8 +94,8 @@ class Subscription extends My_Controller{
 
         $fields = [
             'email' => $email,
-            'amount' => "500",
-            'plan' => "PLN_p3iae6fmwmr9q1v",
+            'amount' => $plan_amount,
+            'plan' => $plan_code,
             'reference' => $ref_timer,
             'callback_url'      => base_url().'Subscription/very_sub',
 
@@ -118,10 +122,10 @@ class Subscription extends My_Controller{
         
         //execute post
         $response = curl_exec($ch);
+        $err = curl_error($ch);
         // curl_close($ch); //update
 
 		
-		// print_r($response);
 		$result  = json_decode($response, true);
         $result  = array_change_key_case($result, CASE_LOWER);
 
@@ -137,6 +141,12 @@ class Subscription extends My_Controller{
 			$p_url			=$v_data['authorization_url'];
 			
 			redirect($p_url,'refresh');
+        }else{
+            $message    = '';
+            $message    .='Could not perform opearation, below might be reason why you are not been able to subscribe to a plan:'.br();
+            $message    .= $result['message'];
+            $this->failed_alert_callbark($message);
+            redirect('Subscription/view_plan');
         }
 
     }
@@ -198,19 +208,19 @@ class Subscription extends My_Controller{
 
             if($action == 'true'){
                 $this->success_alert_callbark('Your subscription was successful');
-                redirect('Subscription/your_plan');
+                redirect('Subscription/my_plan');
             }else if($action == 'false'){
                 $this->failed_alert_callbark('Your subscription was successful, could not update your detail, please message admin for support');
-                redirect('Subscription/your_plan');
+                redirect('Subscription/my_plan');
             }else if($action == 'user_not_exist'){
                 $this->failed_alert_callbark('Your subscription was successful, could not update your detail, becuase this user email does not exist on our database, please message admin for support');
-                redirect('Subscription/your_plan');
+                redirect('Subscription/my_plan');
             }
 
             
         }else{
             $this->failed_alert_callbark('Your subscription was not successful');
-            redirect('Subscription/your_plan');
+            redirect('Subscription/my_plan');
         }
 
     }
@@ -238,14 +248,14 @@ class Subscription extends My_Controller{
 
 
 
-    public function list_sub($customer){
+    public function list_sub($customer, $plan_id){
         $secure_key   =$this->Action->get_private_live_key();
         
 
         $curl = curl_init();
         
         curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.paystack.co/subscription?customer=$customer&perPage=5000&plan=780958",
+            CURLOPT_URL => "https://api.paystack.co/subscription?customer=$customer&perPage=5000&plan=$plan_id",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -274,7 +284,7 @@ class Subscription extends My_Controller{
     
 
     
-    public function djoin_sub(){
+    public function _djoin_sub(){
         $secure_key   =$this->Action->get_private_live_key();
         $url = "https://api.paystack.co/subscription";
 
@@ -323,13 +333,13 @@ class Subscription extends My_Controller{
 
     }
 
-    public function get_sub(){
+    public function _get_sub($sub_code){
         $secure_key   =$this->Action->get_private_live_key();
 
         $curl = curl_init();
         
         curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.paystack.co/subscription/SUB_elguzwb1sybfj8x",
+            CURLOPT_URL => "https://api.paystack.co/subscription/$sub_code",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -352,9 +362,7 @@ class Subscription extends My_Controller{
         }
 
     }
-
-
-    public function create_customer($email=NULL){
+    public function _create_customer($email=NULL){
         $url    = 'https://api.paystack.co/customer';
 
         $secure_key   =$this->Action->get_private_live_key();
@@ -400,7 +408,7 @@ class Subscription extends My_Controller{
     }
 
 
-    public function your_plan(){
+    public function my_plan(){
         $this->session_checker->my_session();
         $this->chat_online_tracker->check();
         $data['alert']			=$this->session->flashdata('alert');
@@ -415,8 +423,130 @@ class Subscription extends My_Controller{
 		$data['email']         			=$this->session->userdata('email');
 		$data['full_name']         		=$this->session->userdata('full_name');
 		$data['user_status']         	=$this->session->userdata('status');
+
+
+         
+        $offset	=$this->uri->segment(3);
+		$total	=$this->Subscription_db->count_subscriber($data['user_id']);
+		$config['base_url'] = base_url().'Subscription/my_plan';
+		$config['total_rows'] =$total;
+		$config['per_page'] = 50;
+		$config['first_link'] = '<li>First</li>';
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li class="page-link">';
+		$config['first_tag_close'] = '</li>';
+		$config['next_tag_open'] = '<li class="page-link">';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li class="page-link">';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="page-item active"><a href="#" class="page-link">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li class="page-link">';
+		$config['num_tag_close'] = '</li>';
+		$config['prev_link'] = '&laquo';
+		$config['next_link'] = '&raquo';
+		$config['prev_tag_open'] = '<li class="page-link">';
+		$config['prev_tag_close'] = '</li>';
+		$this->pagination->initialize($config);
+		$this->pagination->cur_page = $offset;
+		$data['pagination']	=$this->pagination->create_links();
+		$data['per_page']	=$config['per_page'];
+		$data['offset']		=$offset;
+        $data['total']	    =$total;
+
+
+        $data['page_name']      = $this->uri->segment(2);
+
+        $data['get_sub']        =$this->Subscription_db->get_subscriber_2($data['user_id'], $data['offset'], $data['per_page']);
+
         
-        $data['content']                ='back_end/your_plan';
+        $data['content']                ='back_end/my_plan';
+        
+		$this->load->view($this->admin_layout,$data);
+	}
+    
+    public function sess_search_plan_id($qs){
+		if($qs){
+			$this->session->set_userdata('plan_id',$qs);
+			return $qs;
+		}elseif($this->session->userdata('plan_id')){
+			$qs	=$this->session->userdata('plan_id');
+			return $qs;
+		}elseif($this->session->userdata('plan_id') != $qs){
+			$qs	=$this->session->set_userdata('plan_id',$qs);
+			return $qs;
+		}else{
+			$qs	=" ";
+			return $qs;
+		}
+	}
+
+    public function v_plan($id =NULL){
+        $this->sess_search_plan_id($id);
+        redirect('Subscription/plan');
+    }
+
+    public function plan(){
+        $this->session_checker->my_session();
+        $this->chat_online_tracker->check();
+        $data['alert']			        =$this->session->flashdata('alert');
+
+        $plan_id		                =$this->session->userdata('plan_id');
+
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+
+         
+        $offset	=$this->uri->segment(3);
+		$total	=$this->Subscription_db->count_subscription($data['user_id'], $plan_id);
+		$config['base_url'] = base_url().'Subscription/plan';
+		$config['total_rows'] =$total;
+		$config['per_page'] = 50;
+		$config['first_link'] = '<li>First</li>';
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li class="page-link">';
+		$config['first_tag_close'] = '</li>';
+		$config['next_tag_open'] = '<li class="page-link">';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li class="page-link">';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="page-item active"><a href="#" class="page-link">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li class="page-link">';
+		$config['num_tag_close'] = '</li>';
+		$config['prev_link'] = '&laquo';
+		$config['next_link'] = '&raquo';
+		$config['prev_tag_open'] = '<li class="page-link">';
+		$config['prev_tag_close'] = '</li>';
+		$this->pagination->initialize($config);
+		$this->pagination->cur_page = $offset;
+		$data['pagination']	=$this->pagination->create_links();
+		$data['per_page']	=$config['per_page'];
+		$data['offset']		=$offset;
+        $data['total']	    =$total;
+
+
+        $data['page_name']      = $this->uri->segment(2);
+        $data['plan_id']        = $plan_id;
+
+        $data['get_sub']        =$this->Subscription_db->get_subscription($data['user_id'], $plan_id, $data['offset'], $data['per_page']);
+
+        
+        $data['content']                ='back_end/plan';
         
 		$this->load->view($this->admin_layout,$data);
 	}
@@ -428,7 +558,7 @@ class Subscription extends My_Controller{
 
         $fields = [
             'code' => $sub_code,
-            'token' => $email_code
+            'token' => $email_token
         ];
 
         $fields_string = http_build_query($fields);
@@ -464,16 +594,16 @@ class Subscription extends My_Controller{
             if($action){
 
                 $this->success_alert_callbark('Your subscription is now disabled');
-                redirect('Subscription/your_plan');
+                redirect('Subscription/plan');
             }else{
                 $this->failed_alert_callbark('Your subscription is disabled but could not update information');
-                redirect('Subscription/your_plan');
+                redirect('Subscription/plan');
             }
 
         }
         else{
             $this->failed_alert_callbark('Could not disable subscription please try again later!');
-            redirect('Subscription/your_plan');
+            redirect('Subscription/plan');
         }
 
 
@@ -518,7 +648,7 @@ class Subscription extends My_Controller{
         }
         else{
             $this->failed_alert_callbark('Could not perform opearation, please try again later!');
-            redirect('Subscription/your_plan');
+            redirect('Subscription/plan');
         }
 
     }
@@ -553,10 +683,12 @@ class Subscription extends My_Controller{
 
         if($status){
            
-
+            $this->success_alert_callbark('An email has been sent to your email address');
+            redirect('Subscription/plan');
         }
         else{
-            
+            $this->failed_alert_callbark('Could not perform opearation, please try again later!');
+            redirect('Subscription/plan');
         }
 
     }

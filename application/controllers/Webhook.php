@@ -81,7 +81,7 @@ class Webhook extends My_Controller {
                 $this->Subscription_db->insert_subscription(
                     $plan_id, $plan_code, $plan_name, $plan_amount, $plan_interval,
                     $customer_code, $customer_email, 
-                    $auth_bin, $auth_last4, $auth_exp_month, $auth_exp_year, $auth_card_type
+                    $auth_bin, $auth_last4, $auth_exp_month, $auth_exp_year, $auth_card_type, 'success'
                 );
             }
 
@@ -277,6 +277,34 @@ class Webhook extends My_Controller {
 
 			$this->Alert_db->insert_into_alert_tbl($user_id,'OgaBliss',$message, $is_agent);
 			$this->send_email($customer_email, $subject, $message, 'type_2', '','');
+        }
+
+        else if($event == 'invoice.payment_failed'){
+            //plan
+            $subscription_code      = $dataarray['data']['subscription']['subscription_code'];
+            $plan_id                = $this->Subscription_db->get_plan_id_by_sub_code($subscription_code);
+            $plan_code              = $this->Subscription_db->get_plan_code_by_sub_code($subscription_code);;
+            $plan_name              = $this->Subscription_db->get_plan_name_by_sub_code($subscription_code);;
+            $plan_amount            = $this->Subscription_db->get_plan_amount_by_sub_code($subscription_code);;
+            $plan_interval          = $this->Subscription_db->get_plan_interval_by_sub_code($subscription_code);;
+                
+            //customer
+            $customer_code      = $dataarray['data']['customer']['customer_code'];
+            $customer_email     = $dataarray['data']['customer']['email'];
+
+            //authorization
+            $auth_bin           = $dataarray['data']['authorization']['bin'];
+            $auth_last4         = $dataarray['data']['authorization']['last4'];
+            $auth_exp_month     = $dataarray['data']['authorization']['exp_month'];
+            $auth_exp_year      = $dataarray['data']['authorization']['exp_year'];
+            $auth_card_type     = $dataarray['data']['authorization']['card_type'];
+
+            $this->Subscription_db->insert_subscription(
+                $plan_id, $plan_code, $plan_name, $plan_amount, $plan_interval,
+                $customer_code, $customer_email, 
+                $auth_bin, $auth_last4, $auth_exp_month, $auth_exp_year, $auth_card_type, 'failed'
+            );
+            
         }
         
         $this->verifyWebhook($event,$hmac_header);
