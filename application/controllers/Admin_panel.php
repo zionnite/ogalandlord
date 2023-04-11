@@ -2205,7 +2205,7 @@ class Admin_panel extends My_Controller {
 
 
 	public function create_subscription_plan(){
-		$this->session_checker->my_session2();
+		// $this->session_checker->my_session2();
 		$data['alert']			=$this->session->flashdata('alert');
 
    
@@ -2291,7 +2291,7 @@ class Admin_panel extends My_Controller {
 	
 
 	public function subscription_plan(){
-		$this->session_checker->my_session2();
+		// $this->session_checker->my_session2();
 		$data['alert']			=$this->session->flashdata('alert');
 
    
@@ -2331,6 +2331,8 @@ class Admin_panel extends My_Controller {
 		//set the url, number of POST vars, POST data
 		curl_setopt($ch,CURLOPT_URL, $url);
 		curl_setopt($ch,CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0); 
+        curl_setopt($ch, CURLOPT_TIMEOUT, 400); 
 		curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 			"Authorization: Bearer $secure_key",
