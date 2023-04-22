@@ -64,6 +64,20 @@
                             </div>
 
 
+                            <div class="col-md-12">
+                                <label for="plan_type" class="form-label">Plan Type</label>
+                                <select class="form-control" id="plan_type" name="plan_type">
+                                    <option value="">Select Option</option>
+
+                                    <option value="building" selected>Building</option>
+                                    <option value="land">Land</option>
+                                    <option value="all">Others</option>
+                                </select>
+
+                                <small style="color:red;"><?php echo form_error('plan_type');?></small>
+                            </div>
+
+
 
 
                             <div class="col-md-12">

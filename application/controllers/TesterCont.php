@@ -29,6 +29,7 @@ class TesterCont  extends My_Controller{
             foreach ($payables as $payable) {
                 $user_id = $payable['id'];
                 $amount = $total_amount * ($payable['percentage']/100);
+                echo $user_id.' '.$amount.br();
                 // call database to credit ancestor wallet, remember to save user id somewhere for traciability
             }
         }

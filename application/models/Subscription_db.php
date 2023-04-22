@@ -47,7 +47,19 @@ class Subscription_db extends My_Model{
         return false;
     }
 
-    public function create_subscription_plan($plan_name,$description,$interval,$amount,$invoice_limit,$location){
+    public function get_land_image_by_location_id($location){
+        $this->db->where('id',$location);
+        $query      = $this->db->get('land_location');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['image_name'];
+            }
+        }
+        return 'image.png';
+    }
+    public function create_subscription_plan($plan_name,$description,$interval,$amount,$invoice_limit,$location, $plan_type){
+        $plan_image         = $this->get_land_image_by_location_id($location);
+
         $location_name      =$this->get_location_name_by_id($location);
         $data    = array('plan_name'        =>$plan_name,
                          'plan_desc'        =>$description,
@@ -56,6 +68,8 @@ class Subscription_db extends My_Model{
                          'plan_limit'       =>$invoice_limit,
                          'location_id'      =>$location,
                          'location_name'    =>$location_name,
+                         'plan_type'        =>$plan_type,
+                         'plan_image'       =>$plan_image,
                     );
         $this->db->set($data);
         $this->db->insert('subscription_plan');
@@ -466,6 +480,28 @@ class Subscription_db extends My_Model{
         return false;
     }
 
+    public function get_plan_name_by_plan_id($plan_id){
+        $this->db->where('plan_id', $plan_id);
+        $query  = $this->db->get('subscriber_list');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_name'];
+            }
+        }
+        return false;
+    }
+
+    public function get_plan_interval_by_plan_id($plan_id){
+        $this->db->where('plan_id', $plan_id);
+        $query  = $this->db->get('subscriber_list');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_interval'];
+            }
+        }
+        return false;
+    }
+
     public function get_plan_amount_by_sub_code($sub_code){
         $this->db->where('subscription_code', $sub_code);
         $query  = $this->db->get('subscriber_list');
@@ -504,5 +540,17 @@ class Subscription_db extends My_Model{
 		return 0;
     }
 
-    
+    public function check_if_subscription_disable($user_id,$plan_code, $sub_code){
+
+        $this->db->where('user_id',$user_id);
+        $this->db->where('plan_code',$plan_code);
+        $this->db->where('subscription_code',$sub_code);
+        $this->db->where('status','stop');
+
+        $query  = $this->db->get('subscriber_list');
+        if($query->num_rows() > 0){
+            return true;
+        }
+        return false;
+    }
 }

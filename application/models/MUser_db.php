@@ -55,17 +55,8 @@ class MUser_db extends My_Model{
                 $id         = $row['id'];
                 $desend = array('id'=>$id);
                 
-                $this->getDescendant($id);
-
-               
-
-                
-                
-                
+                $this->getDescendant($id);                
             }
-            
-        
-
         } 
         return $desend;
     }
@@ -114,5 +105,66 @@ class MUser_db extends My_Model{
         }
 
         return $results;
+    }
+
+
+    //Start API
+    public function getMPayableBalance($user_id){
+        $this->db->where('id',$user_id);
+        $query      = $this->db->get('users');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['m_payable_balance'];
+            }
+        }
+        return 0;
+    }
+    
+    public function getMTotalBalance($user_id){
+        $this->db->where('id',$user_id);
+        $query      = $this->db->get('users');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['m_total_balance'];
+            }
+        }
+        return 0;
+    }
+
+    public function countDirectDownline($user_id){
+        $this->db->where('m_ref',$user_id);
+        return $this->db->from('users')->count_all_results();
+    }
+
+
+    public function check_if_i_subscribe($user_id,$plan_code){
+        $this->db->where('user_id',$user_id);
+        $this->db->where('plan_code',$plan_code);
+
+        $query   =$this->db->get('subscriber_list');
+        if($query->num_rows() > 0){
+            return true;
+        }
+        return false;
+    }
+
+    public function get_plan_image_by_plan_code($plan_code){
+        $query      = $this->db->get('subscription_plan');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_image'];
+            }
+        }
+        return false;
+    }
+
+    public function totalAmountEarned($user_id){
+        $query      = $this->db->get('users');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['m_total_balance'];
+            }
+        }
+        return 0;
     }
 }

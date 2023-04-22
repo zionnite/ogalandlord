@@ -2240,6 +2240,7 @@ class Admin_panel extends My_Controller {
 			$this->form_validation->set_rules('invoice_limit','invoice_limit','required', array('required' => 'Invoice Limit is required '));
 
 			$this->form_validation->set_rules('location','location','required', array('required' => 'You need to Select location'));
+			$this->form_validation->set_rules('plan_type','plan_type','required', array('required' => 'You need to Select Plan Type'));
 
 		
 			$plan_name     			=$this->input->post('plan_name');            
@@ -2248,6 +2249,7 @@ class Admin_panel extends My_Controller {
 			$amount	     			=$this->input->post('amount');            
 			$invoice_limit	     	=$this->input->post('invoice_limit');            
 			$location	     		=$this->input->post('location');            
+			$plan_type	     		=$this->input->post('plan_type');            
 
 			
 			if($this->form_validation->run() == FALSE){
@@ -2269,7 +2271,7 @@ class Admin_panel extends My_Controller {
 
 			}else{
 
-				$insert	=$this->Subscription_db->create_subscription_plan($plan_name,$description,$interval,$amount,$invoice_limit,$location);
+				$insert	=$this->Subscription_db->create_subscription_plan($plan_name,$description,$interval,$amount,$invoice_limit,$location, $plan_type);
             	if($insert	!=false){
 
 					$this->generate_plan($insert,$plan_name,$description,$interval,$amount,$invoice_limit,$location);

@@ -63,7 +63,7 @@
                         $status                             = $row['status'];
                         $request_card_update                = $row['request_card_update'];
 
-                        $plan_desc                          = $this->Subscription_db->get_plan_desc_by_plan_id($plan_id, $plan_id);
+                        $plan_desc                          = $this->Subscription_db->get_plan_desc_by_plan_id($plan_id);
 
                   
 
