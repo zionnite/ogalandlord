@@ -1273,4 +1273,85 @@ class ApiMlm extends My_Controller{
         return $check;
     }
 
+
+
+    public function join_sub($user_id=NULL, $plan_id=NULL, $plan_code=NULL){
+        $msg        = array();
+        $data       = array();
+
+        $email              = $this->Users_db->get_email_by_id($user_id);
+        $plan_amount        = $this->Subscription_db->get_plan_amount_by_plan_code($plan_code);
+
+
+
+        $secure_key   =$this->Action->get_private_live_key();
+        $url = "https://api.paystack.co/transaction/initialize";
+
+        $ref_timer  = time();
+
+        $fields = [
+            'email' => $email,
+            'amount' => $plan_amount,
+            'plan' => $plan_code,
+            'reference' => $ref_timer,
+            'callback_url'      => base_url().'Subscription/very_sub',
+
+        ];
+
+        $fields_string = http_build_query($fields);
+
+        //open connection
+        $ch = curl_init();
+        
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch,CURLOPT_URL, $url);
+        curl_setopt($ch,CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0); 
+        curl_setopt($ch, CURLOPT_TIMEOUT, 400); 
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Authorization: Bearer $secure_key",
+            "Cache-Control: no-cache",
+        ));
+        
+        //So that curl_exec returns the contents of the cURL; rather than echoing it
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER, true); 
+        
+        //execute post
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        // curl_close($ch); //update
+
+		
+		$result  = json_decode($response, true);
+        $result  = array_change_key_case($result, CASE_LOWER);
+
+        $status     = $result['status'];
+
+        //$this->create_customer($email);
+
+        $status     = $result['status'];
+
+        if($status){
+            $v_data		=$result['data'];
+			
+			$p_url			=$v_data['authorization_url'];
+			
+			redirect($p_url,'refresh');
+            //$data        = array('status'=>'success','link'=>$p_url);
+            $msg        = array('status'=>'success','link'=>$p_url);
+            
+        }else{
+            $message    = '';
+            $message    .='Could not perform opearation, below might be reason why you are not been able to subscribe to a plan:'.br();
+            $message    .= $result['message'];
+            
+            //$data        = array('status'=>'fail','link' => $message);
+            $msg        = array('status'=>'fail','link' => $message);
+        }
+
+        // $msg[] = $data;
+        echo json_encode($msg);
+    }
+
 }

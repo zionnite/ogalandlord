@@ -5,7 +5,8 @@ class Subscription extends My_Controller{
     }
 
 
-    public function view_plan(){
+    public function view_plan($user_id =NULL){
+        $this->Users_db->auth_user($user_id);
         $this->session_checker->my_session();
         $this->chat_online_tracker->check();
         $data['alert']			=$this->session->flashdata('alert');
@@ -81,7 +82,7 @@ class Subscription extends My_Controller{
 
 
     public function join_sub($user_id=NULL, $plan_id=NULL, $plan_code=NULL){
-        
+
         $email              = $this->Users_db->get_email_by_id($user_id);
         $plan_amount        = $this->Subscription_db->get_plan_amount_by_plan_code($plan_code);
 
@@ -97,7 +98,7 @@ class Subscription extends My_Controller{
             'amount' => $plan_amount,
             'plan' => $plan_code,
             'reference' => $ref_timer,
-            'callback_url'      => base_url().'Subscription/very_sub',
+            'callback_url'      => base_url().'Subscription/very_sub/'.$user_id,
 
         ];
 
@@ -146,12 +147,12 @@ class Subscription extends My_Controller{
             $message    .='Could not perform opearation, below might be reason why you are not been able to subscribe to a plan:'.br();
             $message    .= $result['message'];
             $this->failed_alert_callbark($message);
-            redirect('Subscription/view_plan');
+            redirect('Subscription/view_plan/'.$user_id);
         }
 
     }
 
-    public function very_sub($nef=NULL){
+    public function very_sub($user_id=NULL){
         $secure_key   =$this->Action->get_private_live_key();
 
         $ref    = $this->input->get('reference');
@@ -208,19 +209,19 @@ class Subscription extends My_Controller{
 
             if($action == 'true'){
                 $this->success_alert_callbark('Your subscription was successful');
-                redirect('Subscription/my_plan');
+                redirect('Subscription/my_plan/'.$user_id);
             }else if($action == 'false'){
                 $this->failed_alert_callbark('Your subscription was successful, could not update your detail, please message admin for support');
-                redirect('Subscription/my_plan');
+                redirect('Subscription/my_plan/'.$user_id);
             }else if($action == 'user_not_exist'){
                 $this->failed_alert_callbark('Your subscription was successful, could not update your detail, becuase this user email does not exist on our database, please message admin for support');
-                redirect('Subscription/my_plan');
+                redirect('Subscription/my_plan/'.$user_id);
             }
 
             
         }else{
             $this->failed_alert_callbark('Your subscription was not successful');
-            redirect('Subscription/my_plan');
+            redirect('Subscription/my_plan/'.$user_id);
         }
 
     }
@@ -408,7 +409,8 @@ class Subscription extends My_Controller{
     }
 
 
-    public function my_plan(){
+    public function my_plan($user_id =NULL){
+        $this->Users_db->auth_user($user_id);
         $this->session_checker->my_session();
         $this->chat_online_tracker->check();
         $data['alert']			=$this->session->flashdata('alert');
