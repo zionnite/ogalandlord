@@ -629,4 +629,103 @@ class Subscription_db extends My_Model{
 
     }
 
+
+    //Cronjob
+    public function reciept_checker($user_id){
+        $this->db->where('user_id', $user_id);
+        $this->db->where('month', date('M'));
+        $this->db->where('year', year('Y'));
+        $this->db->where('status','pending');
+        
+        $query      = $this->db->get('auto_transfer_rec');
+        if($query->num_rows() > 0){
+            return true;
+        }
+        return false;
+    }
+
+    public function get_my_transfer_rec($user_id){
+        $this->db->where('user_id',$user_id);
+        $this->db->where('month', date('M'));
+        $this->db->where('year', date('Y'));
+        $this->db->where('status','pending');
+	
+		$query		=$this->db->get('auto_transfer_rec');
+		if($query->num_rows() > 0){
+			foreach($query->result_array() as $row){
+				return $row['rec'];
+			}
+		}
+		return false;
+    }
+
+    public function update_transfer_rec($user_id){
+        $data   = array('status' => 'unpaid');
+        $this->db->set($data);
+        $this->db->where('user_id',$user_id);
+        $this->db->where('month',date('M'));
+        $this->db->where('year',date('Y'));
+        $this->db->where('status','pending');
+        
+        $this->db->update('auto_transfer_rec');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+    }
+
+    public function update_transfer_rec_2($rc_code,$dis_user_id){
+        $data       = array('user_id'   =>  $user_id, 
+                            'rec'       =>  $rc_code,
+                            'month'     =>  date('M'),
+                            'year'      =>  date('Y'),
+                            'time'      =>  time(),
+                        );
+        $this->db->set($data);
+        $this->db->insert('auto_transfer_rec');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+    }
+
+    public function update_transfer_rec_3($user_id){
+        $data   = array('status' => 'paid');
+        $this->db->set($data);
+        $this->db->where('user_id',$user_id);
+        $this->db->where('month',date('M'));
+        $this->db->where('year',date('Y'));
+        $this->db->where('status','unpaid');
+
+        $this->db->update('auto_transfer_rec');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+    }
+
+    public function update_transfer_rec_4($user_id){
+        $data   = array('status' => 'failed');
+        $this->db->set($data);
+       $this->db->where('user_id',$user_id);
+        $this->db->where('month',date('M'));
+        $this->db->where('year',date('Y'));
+        $this->db->where('status','unpaid');
+        
+        $this->db->update('auto_transfer_rec');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+    }
+
+    public function get_subscriber_list(){
+        $this->db->where('status','active');
+        $query      = $this->db->get('subscriber_list');
+        if($query->num_rows() > 0){
+            return $query->result_array();
+        }
+        return false;
+    }
+
 }

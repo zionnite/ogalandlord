@@ -181,6 +181,13 @@ class Webhook extends My_Controller {
                $this->Wallet_db->update_user_wallet_pullout_success($sender_id,$props_id);
                 
             }
+            else if($type  == 'mlm_rc'){
+                $user_id           = $dataarray['data']['recipient']['metadata']['user_id'];
+
+                //update transfer status
+                $this->Subscription_db->update_transfer_rec_3($user_id);
+                
+            }
 
 
 
@@ -195,7 +202,15 @@ class Webhook extends My_Controller {
                 //user pulling out
                 $this->Transaction_db->update_user_pull_out_failed($sender_id,$props_id,$amount);
                 $this->Wallet_db->update_user_wallet_pullout_failed($sender_id,$props_id);
-            }else{
+            }
+            else if($type  == 'mlm_rc'){
+                $user_id           = $dataarray['data']['recipient']['metadata']['user_id'];
+
+                //update transfer status
+                $this->Subscription_db->update_transfer_rec_4($user_id);
+                
+            }
+            else{
 
                 $this->Transaction_db->update_transaction_transfer_failed_2($sender_id,$props_id,$amount);
                 $this->Wallet_db->update_wallet_transfer_failed($sender_id,$props_id);

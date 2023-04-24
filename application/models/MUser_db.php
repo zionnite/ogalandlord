@@ -232,6 +232,19 @@ class MUser_db extends My_Model{
 
 
     //Pay User incentiveness
+    public function update_user_payable_balance($user_id, $amount){
+        $user_payable_balance           = $this->getMPayableBalance($user_id);
+        $new_payable_amount             = $user_payable_balance+$amount;
+        $data       = array('m_payable_balance'  => $new_payable_amount);
+        $this->db->set($data);
+        $this->db->where('id', $user_id);
+        $this->update('users');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+    }
+    
     public function pay_user($decendant_id, $user_id, $amount, $trace_tree){
         $user_payable_balance           = $this->getMPayableBalance($user_id);
         $user_total_balance             = $this->getMTotalBalance($user_id);
@@ -281,6 +294,27 @@ class MUser_db extends My_Model{
                                 'year'          =>  date('Y'),
                                 'trace_tree'    =>  $trace_tree,
                                 'decendant_id'  =>  $decendant_id,
+                        );
+        $this->db->set($data);
+        $this->db->insert('mlm_transaction');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+
+    }
+
+    public function add_to_mlm_transaction_history_2($user_id, $amount, $trans_type, $trans_desc, $trans_status){
+        $data           = array('user_id'       =>  $user_id,
+                                'amount'        =>  $amount,
+                                'trans_type'    =>  $trans_type,
+                                'description'   =>  $trans_desc,
+                                'status'        =>  $trans_status,
+                                'date_created'  =>  date('Y-m-d H:i:sa'),
+                                'time'          =>  time(),
+                                'day'           =>  date('d'),
+                                'month'         =>  date('M'),
+                                'year'          =>  date('Y'),
                         );
         $this->db->set($data);
         $this->db->insert('mlm_transaction');
@@ -416,4 +450,6 @@ class MUser_db extends My_Model{
         }
         return false;
     }
+
+   
 }
