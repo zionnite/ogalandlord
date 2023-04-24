@@ -399,7 +399,7 @@ class MUser_db extends My_Model{
     }
 
     public function give_point($user_id,$downline_id, $point, $plan_id){
-        $new_point              = $get_current_point + $point;
+       
         $data                   = array(
                                         'user_id'       =>  $user_id,
                                         'downline_id'   =>  $downline_id,
