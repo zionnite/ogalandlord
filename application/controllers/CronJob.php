@@ -1,10 +1,8 @@
 <?php
-class Cron_job extends My_Controller
-{
+class Cron_job extends My_Controller{
     private $CI;
 
-    public function __construct()
-    {
+    public function __construct(){
         parent::__construct();
         $this->CI    = &get_instance();
         $this->CI->load->model('Admin_db');
@@ -150,8 +148,7 @@ class Cron_job extends My_Controller
         }
     }
 
-    public function system_auto_match_email_notify()
-    {
+    public function system_auto_match_email_notify(){
 
         $this->load->library('email');
 
@@ -355,6 +352,93 @@ class Cron_job extends My_Controller
                     //set app_status
                     $this->CI->Admin_db->reset_user_app_status($id); //come back
                 }
+            }
+        }
+    }
+
+    public function auto_calculate_points(){
+        $users      = $this->MUser_db->get_user_limit_by_500();
+        if(is_array($users)){
+            foreach($users as $row){
+                $user_id        = $row['id'];
+
+                //get user Downline
+                $get_downline   = $this->MUser_db->getDisMuserDownline($user_id);
+                if(is_array($get_downline)){
+                    foreach($get_downline as $low){
+                        $downline_id        = $row['id'];
+                        //check if user exist in my point, if false do, else ignore
+                        $point_checker      = $this->MUser_db->check_ifDownlineExistInPoint($downline_id);
+                        if(!$point_checker){
+                            //get user subscribe plan
+                            $downline_plan_id           = $this->Muser_db->get_user_plan_id_subscribe($downline_id);
+                            $downline_plan_code         = $this->Muser_db->get_user_plan_code_subscribe($downline_id);
+                            $total_amount_spent         = $this->Muser_db->revenue_amount($downline_id, $downline_plan_id);
+
+                            //expected amount
+                            $expected_amount            = $this->MUser_db->get_plan_expected_amount($downline_plan_id);
+                            $plan_type                  = $this->MUser_db->get_user_subscription_plan_type($downline_plan_id);
+                            $plan_interval              = $this->MUser_db->get_user_subscription_plan_interval($downline_plan_id);
+                            $plan_amount                = $this->MUser_db->get_user_subscription_plan_amount($downline_plan_id);
+                            $plan_invoice               = $this->MUser_db->get_user_subscription_plan_amount($downline_plan_id);
+                            $plan_limit                 = $this->MUser_db->get_user_subscription_plan_limit($downline_plan_id);
+
+                            //now check if total amount spent is greater than 8%
+                            $percent        = (10/100) * $total_amount_spent;
+                            
+
+                            if($plan_type == 'building'){
+                                if($plan_limit == '1'){
+                                    //outright 10point
+                                    $this->Muser_db->give_point($user_id,$downline_id, 10, $downline_plan_id);
+                                }
+                                else {
+                                    if($percent >= $expected_amount){
+                                        if($plan_interval   == 'daily' && $plan_amount == '1000'){
+                                            $this->Muser_db->give_point($user_id,$downline_id, 0.5, $downline_plan_id);
+                                        }
+                                        else if($plan_interval == 'daily'  && $plan_amount =='5000'){
+                                            $this->Muser_db->give_point($user_id,$downline_id, 3, $downline_plan_id);
+                                        }
+                                        else if($plan_interval == 'daily'  && $plan_amount =='7000'){
+                                            $this->Muser_db->give_point($user_id,$downline_id, 4, $downline_plan_id);
+                                        }
+                                        else if($plan_interval == 'daily'  && $plan_amount =='15000'){
+                                            $this->Muser_db->give_point($user_id,$downline_id, 5, $downline_plan_id);
+                                        }
+                                    }
+                                }
+                            }else{
+
+                                if($plan_limit == '1'){
+                                    $this->Muser_db->give_point($user_id,$downline_id, 2, $downline_plan_id);
+                                }
+                                else{
+                                    if($percent >= $expected_amount){
+
+                                        if($plan_interval   == 'daily' && $plan_amount == '1000'){
+                                            $this->Muser_db->give_point($user_id,$downline_id, 0.5, $downline_plan_id);
+                                        }
+                                        else if($plan_interval == 'daily'  && $plan_amount =='2000'){
+                                            $this->Muser_db->give_point($user_id,$downline_id, 1, $downline_plan_id);
+                                        }
+                                        else if($plan_interval == 'daily'  && $plan_amount =='3000'){
+                                            $this->Muser_db->give_point($user_id,$downline_id, 1, $downline_plan_id);
+                                        }
+                                        else if($plan_interval == 'daily'  && $plan_amount =='4000'){
+                                            $this->Muser_db->give_point($user_id,$downline_id, 1, $downline_plan_id);
+                                        }
+                                    }
+                                    
+
+                                }
+                                
+                            }
+                        }
+                    }
+                }
+
+                
             }
         }
     }

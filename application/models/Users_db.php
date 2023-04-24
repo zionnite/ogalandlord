@@ -12,6 +12,8 @@ class Users_db extends My_Model{
         return false;
    }
 
+
+
    public function get_user_by_id($user_id){
         $this->db->where('id',$user_id);
         $query  =$this->db->get('users');

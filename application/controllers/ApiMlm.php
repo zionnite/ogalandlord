@@ -16,11 +16,13 @@ class ApiMlm extends My_Controller{
         $payableBalance         = $this->MUser_db->getMPayableBalance($user_id);
         $totalBalance           = $this->MUser_db->getMTotalBalance($user_id);
         $countDirectDownline    = $this->MUser_db->countDirectDownline($user_id);
+        $countMyPoint           = $this->count_my_point_balance($user_id);
 
 
         $data['payable_balance']        = (int)$payableBalance;
         $data['total_balance']          = (int)$totalBalance;
         $data['direct_downline']        = (int)$countDirectDownline;
+        $data['countMyPoint']           = (int)$countMyPoint;
 
       
         $msg[]    = $data;
@@ -1352,6 +1354,156 @@ class ApiMlm extends My_Controller{
 
         // $msg[] = $data;
         echo json_encode($msg);
+    }
+
+
+    //Get PointItems
+    public function count_all_point_items(){
+		return $this->db->from('point_items')->count_all_results();
+	} 
+    
+    public function get_all_point_items($page=NULL, $user_id =NULL){
+        $msg    = array();
+        $start = 0;
+        $limit = 5;
+        $total    =$this->count_all_point_items();
+
+        if($page > $total) {
+
+            $msg  = array('status'=>'end 1');
+            echo json_encode($msg);
+        }else{
+
+            $start = ($page - 1) * $limit;
+            $this->db->limit($limit,$start);
+            $this->db->order_by('id','asc');
+
+            $query      =$this->db->get('point_items');
+            if($query->num_rows() > 0){
+                $dis_data   = array();
+
+                foreach($query->result_array() as $row){
+
+                    $dis_id                             = $row['id'];
+                    $point_name                         = $row['name'];
+                    $point                              = $row['point'];
+                    $point_image                        = $row['image_name'];
+                    $point_image                        = base_url().'project_dir/point/'.$point_image;
+                    
+
+
+                    $dis_data[]      = array(
+                        'dis_id'                            =>  $dis_id,
+                        'point_name'                        =>  $point_name,
+                        'point'                             =>  $point,
+                        'point_image'                       =>  $point_image,                      
+                    );
+                }
+
+                if (count($dis_data) != 0) {
+                    $msg['status']      = 'success';
+                    $msg['point_item']  = $dis_data;
+                    echo json_encode($msg);
+                }
+            }
+            else {
+                $msg  = array('status' => 'end 2');
+                echo json_encode($msg);
+                
+            }
+            
+            
+        }
+    }
+    
+    public function count_my_point_balance($user_id){
+		$this->db->where('user_id',$user_id);
+		$this->db->where('status','not_claim');
+	
+		$this->db->select_sum('point');
+		$query		=$this->db->get('my_point');
+		if($query->num_rows() > 0){
+			foreach($query->result_array() as $row){
+				return $row['point'];
+			}
+		}
+		return 0;
+	} 
+    
+    public function count_my_point_items($user_id){
+		return $this->db->from('my_point')->where('user_id',$user_id)->count_all_results();
+	} 
+    
+    public function get_my_point_items($page=NULL, $user_id =NULL){
+        $msg    = array();
+        $start = 0;
+        $limit = 5;
+        $total    =$this->count_my_point_items($user_id);
+
+        if($page > $total) {
+
+            $msg  = array('status'=>'end 1');
+            echo json_encode($msg);
+        }else{
+
+            $start = ($page - 1) * $limit;
+            $this->db->limit($limit,$start);
+            $this->db->order_by('id','asc');
+            $this->db->where('user_id',$user_id);
+
+            $query      =$this->db->get('my_point');
+            if($query->num_rows() > 0){
+                $dis_data   = array();
+
+                foreach($query->result_array() as $row){
+
+                    $dis_id                             = $row['id'];
+                    $user_id                            = $row['user_id'];
+                    $downline_id                        = $row['downline_id'];
+                    $point                              = $row['point'];
+                    $plan_list_id                       = $row['plan_list_id'];
+                    $status                             = $row['status'];
+                    $time                               = $row['time'];
+
+
+                    $downline_full_name     = $this->Users_db->get_user_full_name_by_id($downline_id);
+                    $downline_user_name     = $this->Users_db->get_user_name_by_id($downline_id);
+                    $downline_image         = $this->Users_db->get_image_name_by_id($downline_id);
+                    $downline_image         = base_url().'project_dir/users/'.$downline_user_name.'/images/'.$downline_image;
+                    
+
+
+                    $dis_data[]      = array(
+                        'dis_id'                            =>  $dis_id,
+                        'user_id'                           =>  $user_id,
+                        
+                        'point'                             =>  $point,                      
+                        'plan_list_id'                      =>  $plan_list_id,                      
+                        'status'                            =>  $status,                      
+                        'time'                              =>  $time,   
+
+                        'downline_id'                       =>  $downline_id,
+                        'downline_full_name'                =>  $downline_full_name,
+                        'downline_user_name'                =>  $downline_user_name,
+                        'downline_image'                    =>  $downline_image,
+
+                    );
+                }
+
+                if (count($dis_data) != 0) {
+                    $msg['status']      = 'success';
+                    $msg['my_point_item']  = $dis_data;
+                    echo json_encode($msg);
+                }
+            }
+            else {
+                $msg  = array('status' => 'end 2');
+                echo json_encode($msg);
+                
+            }
+            
+            
+        }
     }
 
 }

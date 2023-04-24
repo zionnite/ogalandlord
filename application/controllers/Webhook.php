@@ -83,7 +83,34 @@ class Webhook extends My_Controller {
                     $customer_code, $customer_email, 
                     $auth_bin, $auth_last4, $auth_exp_month, $auth_exp_year, $auth_card_type, 'success'
                 );
-                
+
+                /**
+                 * Pay User for Bliss Legacy subscription
+                 * first check if user is m_user
+                 * 
+                */
+                $user_id        = $this->Users_db->get_user_id_by_email($customer_email);    
+                if($this->Users_db->get_user_status($user_id) == 'm_user') {           
+                    $trace_tree     = $this->MUser_db->getAncestory($user_id, [], 3);
+                    $payables       = $this->MUser_db->getAncestoryPayable($user_id);
+                    
+
+                    // method that pays percentage to each ancestor
+                    // creditAncestor on percentage of total amount
+
+                    foreach ($payables as $payable) {
+                        $ancestor_id                = $payable['id'];
+                        $amount                     = $plan_amount * ($payable['percentage']/100);
+                        // call database to credit ancestor wallet, remember to save user id somewhere for traciability
+                        $this->MUser_db->pay_user($user_id, $ancestor_id, $amount, $trace_tree);
+                    }
+                    //update site wallet
+                    $this->MUser_db->pay_site($plan_amount, $user_id);
+
+                }else{
+                    //subscription earning
+                    $this->Subscription_db->update_subscription_balance($plan_amount, $user_id);
+                }
             }
 
 

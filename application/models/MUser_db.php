@@ -70,22 +70,21 @@ class MUser_db extends My_Model{
         if ($query->num_rows() > 0) {
             $user = $query->result_array()[0];
 
-            if (isset($user['m_ref']) && $depth <= $max_depth) {
+            if (isset($user['m_ref']) && $depth <= $max_depth && $user['m_ref'] !='') {
                 $user_id = $user['m_ref'];
-
 
                 array_push($tree, $user_id);
                 // this is why. either pass by reference &$tree or update the object each time it runs
                 $tree = $this->getAncestory($user_id, $tree, $max_depth, $depth + 1);
-            }// continue
-        } //wait
+            }
+        } 
 
         return $tree;
     }
 
     public function getAncestoryPayable($user_id) {
         $results = [];
-        $ancestors = $this->getAncestory($user_id, [], 4);
+        $ancestors = $this->getAncestory($user_id, [], 3);
 
         for ($i = 0; $i < 4 && $i < count($ancestors); $i++) {
             switch($i +  1) {
@@ -166,5 +165,255 @@ class MUser_db extends My_Model{
             }
         }
         return 0;
+    }
+
+    public function get_site_mlm_payable_balance(){
+        
+        $query      = $this->db->get('site_setting');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['site_mlm_payable_balance'];
+            }
+        }
+        return 0;
+    }
+
+    public function get_site_mlm_total_balance(){
+        
+        $query      = $this->db->get('site_setting');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['site_mlm_total_balance'];
+            }
+        }
+        return 0;
+    }
+
+
+    public function get_site_id(){
+        $query      = $this->db->get('site_setting');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['id'];
+            }
+        }
+        return false;
+    }
+
+    public function update_site_mlm_payable_balance($amount){
+        $site_id            = $this->get_site_id();
+        $current_amount     = $this->get_site_mlm_payable_balance();
+        $new_total_amount   = $amount + $current_amount;
+        $data   = array('site_mlm_payable_balance' => $new_total_amount);
+        $this->db->set($data);
+        $this->db->where('id',$site_id);
+        $this->db->update('site_setting');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+    }
+
+    public function update_site_mlm_total_balance($amount){
+        $site_id            = $this->get_site_id();
+        
+        $current_amount     = $this->get_site_mlm_total_balance();
+        $new_total_amount   = $amount + $current_amount;
+        $data   = array('site_mlm_total_balance' => $new_total_amount);
+        $this->db->set($data);
+        $this->db->where('id',$site_id);
+        $this->db->update('site_setting');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+    }
+
+
+
+    //Pay User incentiveness
+    public function pay_user($decendant_id, $user_id, $amount, $trace_tree){
+        $user_payable_balance           = $this->getMPayableBalance($user_id);
+        $user_total_balance             = $this->getMTotalBalance($user_id);
+
+        $new_payable_amount             = $amount + $user_payable_balance;
+        $new_total_amount               = $amount + $user_total_balance;
+
+        $data   = array('m_payable_balance' =>$new_payable_amount,'m_total_balance' => $new_total_amount);
+        $this->db->set($data);
+        $this->db->where('id', $user_id);
+        $this->db->update('users');
+        if($this->db->affected_rows() > 0){
+            
+            $trans_type     = 'deposit';
+            $trans_status   = 'success';
+            $trans_desc     = 'You account has been funded from your decendant subscription payment plan';
+            $this->add_to_mlm_transaction_history($user_id,$amount, $trans_type, $trans_desc, $trans_status, $trace_tree, $decendant_id);
+            return true;
+        }
+        return false;
+
+    }
+
+    public function pay_site($amount, $subscriber_id){
+
+        $trace_tree     = $subscriber_id;
+        $trans_type     = 'deposit';
+        $trans_status   = 'success';
+        $trans_desc     = 'A Subscriber subscription went through';
+
+        $this->update_site_mlm_payable_balance($amount);
+        $this->update_site_mlm_total_balance($amount);
+        
+        $this->add_to_mlm_transaction_history('admin', $amount, $trans_type, $trans_desc, $trans_status, $trace_tree, $subscriber_id);
+    }
+
+    public function add_to_mlm_transaction_history($user_id, $amount, $trans_type, $trans_desc, $trans_status, $trace_tree, $decendant_id){
+        $data           = array('user_id'       =>  $user_id,
+                                'amount'        =>  $amount,
+                                'trans_type'    =>  $trans_type,
+                                'description'   =>  $trans_desc,
+                                'status'        =>  $trans_status,
+                                'date_created'  =>  date('Y-m-d H:i:sa'),
+                                'time'          =>  time(),
+                                'day'           =>  date('d'),
+                                'month'         =>  date('M'),
+                                'year'          =>  date('Y'),
+                                'trace_tree'    =>  $trace_tree,
+                                'decendant_id'  =>  $decendant_id,
+                        );
+        $this->db->set($data);
+        $this->db->insert('mlm_transaction');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+
+    }
+
+
+    //CRON JOB
+    public function get_user_limit_by_500(){
+        
+        $this->db->limit(500);
+        $query  =$this->db->get('users');
+        if($query->num_rows() > 0){
+            return $query->result_array();
+        }
+        return false;
+    }
+
+
+    public function revenue_amount($user_id, $plan_id){
+        $this->db->where('user_id',$user_id);
+        $this->db->where('plan_id',$plan_id);
+        $this->db->where('status','success');
+	
+		$this->db->select_sum('amount');
+		$query		=$this->db->get('subscription');
+		if($query->num_rows() > 0){
+			foreach($query->result_array() as $row){
+				return $row['amount'];
+			}
+		}
+		return 0;
+    }
+
+    public function get_user_plan_id_subscribe($user_id){
+        $this->db->where('user_id', $user_id);
+        $this->db->where('status', 'active');
+        $query      = $this->db->get('subscriber_list');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_id'];
+            }
+        }
+        return false;
+    }
+
+    public function get_user_plan_code_subscribe($user_id){
+        $this->db->where('user_id', $user_id);
+        $this->db->where('status', 'active');
+        $query      = $this->db->get('subscriber_list');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_code'];
+            }
+        }
+        return false;
+    }
+
+    public function get_plan_expected_amount($plan_id){
+        $this->db->where('plan_id', $plan_id);
+        $query      = $this->db->get('subscription_plan');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['expected_amount'];
+            }
+        }
+        return false;
+    }
+
+    public function get_user_subscription_plan_type($plan_id){
+        $this->db->where('plan_id', $plan_id);
+        $query      = $this->db->get('subscription_plan');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_type'];
+            }
+        }
+        return false;
+    }
+
+    public function get_user_subscription_plan_interval($plan_id){
+        $this->db->where('plan_id', $plan_id);
+        $query      = $this->db->get('subscription_plan');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_interval'];
+            }
+        }
+        return false;
+    }
+
+    public function get_user_subscription_plan_amount($plan_id){
+        $this->db->where('plan_id', $plan_id);
+        $query      = $this->db->get('subscription_plan');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_amount'];
+            }
+        }
+        return false;
+    }
+
+    public function get_user_subscription_plan_limit($plan_id){
+        $this->db->where('plan_id', $plan_id);
+        $query      = $this->db->get('subscription_plan');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_limit'];
+            }
+        }
+        return false;
+    }
+
+    public function give_point($user_id,$downline_id, $point, $plan_id){
+        $new_point              = $get_current_point + $point;
+        $data                   = array(
+                                        'user_id'       =>  $user_id,
+                                        'downline_id'   =>  $downline_id,
+                                        'point'         =>  $point,
+                                        'plan_list_id'  =>  $plan_id,
+                                        'time'          =>  time(),
+
+
+                                );
+        $this->db->set($data);
+        $this->db->insert('my_point');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
     }
 }

@@ -553,4 +553,80 @@ class Subscription_db extends My_Model{
         }
         return false;
     }
+
+    public function get_site_id(){
+        $query      = $this->db->get('site_setting');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['id'];
+            }
+        }
+        return false;
+    }
+    
+    public function get_subscription_balance(){
+        
+        $query      = $this->db->get('site_setting');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['subscription_balance'];
+            }
+        }
+        return 0;
+    }
+    public function update_subscription_balance($amount){
+        $site_id            = $this->get_site_id();
+        
+        $current_amount     = $this->get_subscription_balance();
+        $new_total_amount   = $amount + $current_amount;
+        $data   = array('subscription_balance' => $new_total_amount);
+        $this->db->set($data);
+        $this->db->where('id',$site_id);
+        $this->db->update('site_setting');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+    }
+
+
+    public function add_user_subscription_history($amount, $subscriber_id){
+        $trans_type     = 'deposit';
+        $trans_status   = 'success';
+        $trans_desc     = 'Subscription was successful';
+
+        $this->add_to_subscriber_transaction_history($subscriber_id, $amount, $trans_type, $trans_desc, $trans_status);
+    }
+    
+    public function_add_to_site_subscriber_balance($amount, $subscriber_id)(
+        
+        $trans_type     = 'deposit';
+        $trans_status   = 'success';
+        $trans_desc     = 'A Subscriber subscription went through';
+
+        $this->update_subscription_balance($amount);
+        $this->add_to_subscriber_transaction_history($subscriber_id, $amount, $trans_type, $trans_desc, $trans_status);
+    )
+
+    public function add_to_subscriber_transaction_history($subscriber_id, $amount, $trans_type, $trans_desc, $trans_status){
+        $data           = array('user_id'       =>  $subscriber_id,
+                                'amount'        =>  $amount,
+                                'trans_type'    =>  $trans_type,
+                                'description'   =>  $trans_desc,
+                                'status'        =>  $trans_status,
+                                'date_created'  =>  date('Y-m-d H:i:sa'),
+                                'time'          =>  time(),
+                                'day'           =>  date('d'),
+                                'month'         =>  date('M'),
+                                'year'          =>  date('Y'),
+                        );
+        $this->db->set($data);
+        $this->db->insert('subscription_transaction');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+
+    }
+
 }
