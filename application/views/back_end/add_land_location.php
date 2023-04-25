@@ -41,6 +41,11 @@
                             </div>
 
 
+                            <div class="col-md-12">
+                                <input type="file" class="form-control" id="file" name="userfile" />
+                            </div>
+
+
 
 
                             <div class="col-12">

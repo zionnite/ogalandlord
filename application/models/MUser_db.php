@@ -28,6 +28,8 @@ class MUser_db extends My_Model{
         $checker    =$this->Users_db->get_user_status($user_id);
         if($checker == 'm_user'){
             $this->db->where('m_ref',$user_id);
+        }else{
+            $this->db->where('status','m_user');
         }
         return $this->db->from('users')->count_all_results();
     }
@@ -36,6 +38,8 @@ class MUser_db extends My_Model{
         $checker    =$this->Users_db->get_user_status($user_id);
         if($checker == 'm_user'){
             $this->db->where('m_ref',$user_id);
+        }else{
+            $this->db->where('status','m_user');
         }
 
         $this->db->limit($per_page,$offset);
@@ -151,6 +155,11 @@ class MUser_db extends My_Model{
             }
         }
         return 0;
+    }
+
+    public function cout_m_user(){
+        $this->db->where('status','m_user');
+        return $this->db->from('users')->count_all_results();
     }
 
     public function countDirectDownline($user_id){

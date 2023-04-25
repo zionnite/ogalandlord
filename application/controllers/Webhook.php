@@ -208,6 +208,8 @@ class Webhook extends My_Controller {
 
                 //update transfer status
                 $this->Subscription_db->update_transfer_rec_4($user_id);
+                //update user payable balance,
+                //update site payable balance
                 
             }
             else{

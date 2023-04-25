@@ -2102,6 +2102,429 @@ class Admin_panel extends My_Controller {
 		$this->load->view($this->admin_layout,$data);
     }
 
+
+
+	/**
+	 * M Users
+	 */
+		
+	public function mlm_dashboard(){
+		$this->session_checker->my_session();
+        $this->chat_online_tracker->check();
+		
+		$data['alert']			=$this->session->flashdata('alert');
+
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+
+
+		$data['content'] 		='back_end/index_m';
+		$this->load->view($this->m_admin_layout,$data);
+	}
+
+
+
+    public function view_mlm_users(){
+
+        $this->session_checker->my_session2();
+        $this->chat_online_tracker->check();
+		$data['alert']					=$this->session->flashdata('alert');
+
+
+        $data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+        
+        $offset	=$this->uri->segment(3);
+		$total	=$this->MUser_db->count_my_downline($data['user_id']);
+		$config['base_url'] = base_url().'Admin_panel/view_mlm_users';
+		$config['total_rows'] =$total;
+		$config['per_page'] = 50;
+		$config['first_link'] = '<li>First</li>';
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li class="page-link">';
+		$config['first_tag_close'] = '</li>';
+		$config['next_tag_open'] = '<li class="page-link">';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li class="page-link">';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="page-item active"><a href="#" class="page-link">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li class="page-link">';
+		$config['num_tag_close'] = '</li>';
+		$config['prev_link'] = '&laquo';
+		$config['next_link'] = '&raquo';
+		$config['prev_tag_open'] = '<li class="page-link">';
+		$config['prev_tag_close'] = '</li>';
+		$this->pagination->initialize($config);
+		$this->pagination->cur_page = $offset;
+		$data['pagination']	=$this->pagination->create_links();
+		$data['per_page']	=$config['per_page'];
+		$data['offset']		=$offset;
+        $data['total']	    =$total;
+
+
+        $data['page_name']      = $this->uri->segment(2);
+
+        $data['get_users']      =$this->MUser_db->get_my_downline($data['user_id'], $data['offset'],$data['per_page']);
+
+        $data['content']        ='back_end/view_mlm_users';
+		$this->load->view($this->m_admin_layout,$data);
+    }
+
+
+	       
+    public function sess_user_downline_id($qs){
+		if($qs){
+			$this->session->set_userdata('user_dd_id',$qs);
+			return $qs;
+		}elseif($this->session->userdata('user_dd_id')){
+			$qs	=$this->session->userdata('user_dd_id');
+			return $qs;
+		}elseif($this->session->userdata('user_dd_id') != $qs){
+			$qs	=$this->session->set_userdata('user_dd_id',$qs);
+			return $qs;
+		}else{
+			$qs	=" ";
+			return $qs;
+		}
+	}
+
+	       
+    public function sess_user_plan_id($qs){
+		if($qs){
+			$this->session->set_userdata('user_pn_id',$qs);
+			return $qs;
+		}elseif($this->session->userdata('user_pn_id')){
+			$qs	=$this->session->userdata('user_pn_id');
+			return $qs;
+		}elseif($this->session->userdata('user_pn_id') != $qs){
+			$qs	=$this->session->set_userdata('user_pn_id',$qs);
+			return $qs;
+		}else{
+			$qs	=" ";
+			return $qs;
+		}
+	}
+
+	public function vu_downline($id=NULL){
+		$this->sess_user_downline_id($id);
+		// echo $id;
+		redirect('Admin_panel/view_user_downline');
+	}
+
+	public function pn_downline($id=NULL){
+		$this->sess_user_plan_id($id);
+		redirect('Admin_panel/view_user_plan');
+	}
+
+
+
+	public function view_user_downline(){
+		$this->session_checker->my_session2();
+        $this->chat_online_tracker->check();
+		$data['alert']					=$this->session->flashdata('alert');
+
+
+        $data['user_dd_id']         	=$this->session->userdata('user_dd_id');
+
+		if($checker    =$this->Users_db->get_user_status($data['user_dd_id']) !='m_user'){
+			$this->failed_alert_callbark('This User status is not recognize as MLM User');
+			redirect('Admin_panel/view_mlm_users');
+		}
+
+        $data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+        
+        $offset	=$this->uri->segment(3);
+		$total	=$this->MUser_db->count_my_downline($data['user_dd_id']);
+		$config['base_url'] = base_url().'Admin_panel/view_user_downline';
+		$config['total_rows'] =$total;
+		$config['per_page'] = 50;
+		$config['first_link'] = '<li>First</li>';
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li class="page-link">';
+		$config['first_tag_close'] = '</li>';
+		$config['next_tag_open'] = '<li class="page-link">';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li class="page-link">';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="page-item active"><a href="#" class="page-link">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li class="page-link">';
+		$config['num_tag_close'] = '</li>';
+		$config['prev_link'] = '&laquo';
+		$config['next_link'] = '&raquo';
+		$config['prev_tag_open'] = '<li class="page-link">';
+		$config['prev_tag_close'] = '</li>';
+		$this->pagination->initialize($config);
+		$this->pagination->cur_page = $offset;
+		$data['pagination']	=$this->pagination->create_links();
+		$data['per_page']	=$config['per_page'];
+		$data['offset']		=$offset;
+        $data['total']	    =$total;
+
+
+        $data['page_name']      = $this->uri->segment(2);
+
+        $data['get_users']      =$this->MUser_db->get_my_downline($data['user_dd_id'], $data['offset'],$data['per_page']);
+
+        $data['content']        ='back_end/view_mlm_users_2';
+		$this->load->view($this->m_admin_layout,$data);
+	}
+
+	public function view_user_plan(){
+        $this->session_checker->my_session();
+        $this->chat_online_tracker->check();
+        $data['alert']			=$this->session->flashdata('alert');
+
+      
+		$data['user_pn_id']         		=$this->session->userdata('user_pn_id');
+
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+
+         
+        $offset	=$this->uri->segment(3);
+		$total	=$this->Subscription_db->count_subscriber($data['user_pn_id']);
+		$config['base_url'] = base_url().'Admin_panel/view_user_plan';
+		$config['total_rows'] =$total;
+		$config['per_page'] = 50;
+		$config['first_link'] = '<li>First</li>';
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li class="page-link">';
+		$config['first_tag_close'] = '</li>';
+		$config['next_tag_open'] = '<li class="page-link">';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li class="page-link">';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="page-item active"><a href="#" class="page-link">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li class="page-link">';
+		$config['num_tag_close'] = '</li>';
+		$config['prev_link'] = '&laquo';
+		$config['next_link'] = '&raquo';
+		$config['prev_tag_open'] = '<li class="page-link">';
+		$config['prev_tag_close'] = '</li>';
+		$this->pagination->initialize($config);
+		$this->pagination->cur_page = $offset;
+		$data['pagination']	=$this->pagination->create_links();
+		$data['per_page']	=$config['per_page'];
+		$data['offset']		=$offset;
+        $data['total']	    =$total;
+
+
+        $data['page_name']      = $this->uri->segment(2);
+
+        $data['get_sub']        =$this->Subscription_db->get_subscriber_2($data['user_pn_id'], $data['offset'], $data['per_page']);
+
+        
+        $data['content']                ='back_end/view_mlm_plan';
+        
+		$this->load->view($this->m_admin_layout,$data);
+	}
+
+	public function sess_search_plan_id($qs){
+		if($qs){
+			$this->session->set_userdata('plan_id',$qs);
+			return $qs;
+		}elseif($this->session->userdata('plan_id')){
+			$qs	=$this->session->userdata('plan_id');
+			return $qs;
+		}elseif($this->session->userdata('plan_id') != $qs){
+			$qs	=$this->session->set_userdata('plan_id',$qs);
+			return $qs;
+		}else{
+			$qs	=" ";
+			return $qs;
+		}
+	}
+
+	public function sess_search_dis_user_id($qs){
+		if($qs){
+			$this->session->set_userdata('dis_user_id',$qs);
+			return $qs;
+		}elseif($this->session->userdata('dis_user_id')){
+			$qs	=$this->session->userdata('dis_user_id');
+			return $qs;
+		}elseif($this->session->userdata('dis_user_id') != $qs){
+			$qs	=$this->session->set_userdata('dis_user_id',$qs);
+			return $qs;
+		}else{
+			$qs	=" ";
+			return $qs;
+		}
+	}
+
+    public function v_plan($dis_user_id=NULL,$id =NULL){
+        $this->sess_search_plan_id($id);
+        $this->sess_search_dis_user_id($dis_user_id);
+        redirect('Admin_panel/mlm_user_plan');
+    }
+
+    public function mlm_user_plan(){
+        $this->session_checker->my_session();
+        $this->chat_online_tracker->check();
+        $data['alert']			        =$this->session->flashdata('alert');
+
+        $plan_id		                =$this->session->userdata('plan_id');
+        $dis_user_id	                =$this->session->userdata('dis_user_id');
+		// echo $plan_id.br().$dis_user_id;
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+
+         
+        $offset	=$this->uri->segment(3);
+		$total	=$this->Subscription_db->count_subscription($dis_user_id, $plan_id);
+		$config['base_url'] = base_url().'Admin_panel/mlm_user_plan';
+		$config['total_rows'] =$total;
+		$config['per_page'] = 50;
+		$config['first_link'] = '<li>First</li>';
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li class="page-link">';
+		$config['first_tag_close'] = '</li>';
+		$config['next_tag_open'] = '<li class="page-link">';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li class="page-link">';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="page-item active"><a href="#" class="page-link">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li class="page-link">';
+		$config['num_tag_close'] = '</li>';
+		$config['prev_link'] = '&laquo';
+		$config['next_link'] = '&raquo';
+		$config['prev_tag_open'] = '<li class="page-link">';
+		$config['prev_tag_close'] = '</li>';
+		$this->pagination->initialize($config);
+		$this->pagination->cur_page = $offset;
+		$data['pagination']	=$this->pagination->create_links();
+		$data['per_page']	=$config['per_page'];
+		$data['offset']		=$offset;
+        $data['total']	    =$total;
+
+
+        $data['page_name']      = $this->uri->segment(2);
+        $data['plan_id']        = $plan_id;
+        $data['dis_user_id']        = $dis_user_id;
+
+        $data['get_sub']        =$this->Subscription_db->get_subscription($dis_user_id, $plan_id, $data['offset'], $data['per_page']);
+
+        
+        $data['content']                ='back_end/mlm_user_plan';
+        
+		$this->load->view($this->m_admin_layout,$data);
+	}
+
+
+    public function transaction(){
+        $this->session_checker->my_session();
+        $this->chat_online_tracker->check();
+        $data['alert']			        =$this->session->flashdata('alert');
+
+
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+
+         
+        $offset	=$this->uri->segment(3);
+		$total	=$this->MUser_db->count_transaction($data['user_id']);
+		$config['base_url'] = base_url().'Admin_panel/transaction';
+		$config['total_rows'] =$total;
+		$config['per_page'] = 50;
+		$config['first_link'] = '<li>First</li>';
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li class="page-link">';
+		$config['first_tag_close'] = '</li>';
+		$config['next_tag_open'] = '<li class="page-link">';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li class="page-link">';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="page-item active"><a href="#" class="page-link">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li class="page-link">';
+		$config['num_tag_close'] = '</li>';
+		$config['prev_link'] = '&laquo';
+		$config['next_link'] = '&raquo';
+		$config['prev_tag_open'] = '<li class="page-link">';
+		$config['prev_tag_close'] = '</li>';
+		$this->pagination->initialize($config);
+		$this->pagination->cur_page = $offset;
+		$data['pagination']	=$this->pagination->create_links();
+		$data['per_page']	=$config['per_page'];
+		$data['offset']		=$offset;
+        $data['total']	    =$total;
+
+
+        $data['page_name']      = $this->uri->segment(2);
+
+        $data['downline']        =$this->MUser_db->get_transaction($data['user_id'], $data['offset'], $data['per_page']);
+
+        
+        $data['content']                ='back_end/transaction';
+        
+		$this->load->view($this->m_admin_layout,$data);
+	}
+
 	/**
 	 * Lands
 	 */
@@ -2122,7 +2545,7 @@ class Admin_panel extends My_Controller {
 
 
 		$data['content']        ='back_end/add_land_location';
-		$this->load->view($this->admin_layout,$data);
+		$this->load->view($this->m_admin_layout,$data);
 	}
 	
 	public function insert_land_location(){
@@ -2154,16 +2577,40 @@ class Admin_panel extends My_Controller {
 
 			}else{
 
-				$insert	=$this->Subscription_db->add_land_location($location);
-                if($insert	==TRUE){
-                         
-					$this->success_alert_callbark('Land Location Added');
-					redirect('Admin_panel/view_landlocation');
-                }else{
-                            
-					$this->failed_alert_callbark('Database Busy, Could not perform operation, Pls Try Again Later!');
-					redirect('Admin_panel/add_land_location');
-                }
+				@mkdir('project_dir');
+            	@mkdir('project_dir/subscription');
+				$site_logo_1['upload_path'] = './project_dir/subscription';
+				$site_logo_1['allowed_types'] = 'png|jpeg|jpg|gif';
+				$site_logo_1['max_size']= '';
+				$site_logo_1['overwrite'] = FALSE;
+				$site_logo_1['remove_spaces'] = TRUE;
+				$site_logo_1['encrypt_name'] = TRUE;
+				// $site_logo_1['max_width'] = '300';
+				// $site_logo_1['max_height'] = '250';
+               	// $site_logo_1['min_width'] = '300';
+				// $site_logo_1['min_height'] = '250';
+
+				$this->upload->initialize($site_logo_1);
+				$this->load->library('upload', $site_logo_1);
+
+				if(!$this->upload->do_upload()) {
+					
+					$this->failed_alert_callbark('Error in Uploading Image'.$this->upload->display_errors().'Ensure image is in the right Dimension');
+				}else{
+                  
+
+					$file_name	=$this->upload->data('file_name');
+					$insert	=$this->Subscription_db->add_land_location($location, $file_name);
+					if($insert	==TRUE){
+							
+						$this->success_alert_callbark('Land Location Added');
+						redirect('Admin_panel/view_landlocation');
+					}else{
+								
+						$this->failed_alert_callbark('Database Busy, Could not perform operation, Pls Try Again Later!');
+						redirect('Admin_panel/add_land_location');
+					}
+				}
 			}
 		}else{
 			
@@ -2190,7 +2637,7 @@ class Admin_panel extends My_Controller {
 
 
 		$data['content']        ='back_end/view_landlocation';
-		$this->load->view($this->admin_layout,$data);
+		$this->load->view($this->m_admin_layout,$data);
 	}
 
 	public function remove_landlocation($id){
@@ -2202,6 +2649,8 @@ class Admin_panel extends My_Controller {
 		}
 		redirect('Admin_panel/view_landlocation');
 	}
+
+
 
 
 	public function create_subscription_plan(){
@@ -2221,7 +2670,7 @@ class Admin_panel extends My_Controller {
 
 
 		$data['content']        		='back_end/create_subscription_plan';
-		$this->load->view($this->admin_layout,$data);
+		$this->load->view($this->m_admin_layout,$data);
 	}
 
 	public function generate_subscription_plan(){
@@ -2308,8 +2757,19 @@ class Admin_panel extends My_Controller {
 		$data['user_status']         	=$this->session->userdata('status');
 
 
-		$data['content']        ='back_end/view_landlocation';
-		$this->load->view($this->admin_layout,$data);
+		$data['content']        ='back_end/view_subscription_plan';
+		$this->load->view($this->m_admin_layout,$data);
+	}
+
+
+	public function remove_subscription($id){
+		$action		= $this->Subscription_db->remove_landlocation($id);
+		if($action){
+			$this->success_alert_callbark('Manager Removed From List');
+		}else{
+			$this->failed_alert_callbark('Database Busy, Could not perform operation, Pls Try Again Later!');
+		}
+		redirect('Admin_panel/subscription_plan');
 	}
 
 	public function generate_plan($id,$plan_name,$description,$interval,$amount,$invoice_limit,$location){

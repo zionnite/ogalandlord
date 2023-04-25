@@ -5,6 +5,7 @@ class My_Controller extends CI_Controller{
 	public $layout_3;
     public $admin_layout;
     public $admin_layout_2;
+    public $m_admin_layout;
     public $auth_layout;
     public $user_layout;
 	public $email_layout;
@@ -32,6 +33,7 @@ class My_Controller extends CI_Controller{
 
 		$this->admin_layout		='back_end/master';// User Login
 		$this->admin_layout_2	='back_end/master_2'; //User Login 
+		$this->m_admin_layout	='back_end/m_master'; //User Login 
 
 		$this->auth_layout		='auth/master'; // Authetication Users
 

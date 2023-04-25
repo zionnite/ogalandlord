@@ -4,8 +4,8 @@ class Subscription_db extends My_Model{
         parent::__construct();
     }
 
-    public function add_land_location($location){
-        $data   = array('location_name'=>$location);
+    public function add_land_location($location, $file_name){
+        $data   = array('location_name'=>$location, 'image_name'=>$file_name);
         $this->db->set($data);
         $this->db->insert('land_location');
         if($this->db->affected_rows() > 0){
@@ -729,4 +729,12 @@ class Subscription_db extends My_Model{
         return false;
     }
 
+    public function get_subscription_plan(){
+
+        $query      = $this->db->get('subscription_plan');
+        if($query->num_rows() > 0){
+            return $query->result_array();
+        }
+        return false;
+    }
 }
