@@ -99,18 +99,26 @@ class Cron_job extends My_Controller{
 
     //auto fund
     public function auto_create_transaction_reciept(){
-        $users      = $this->MUser_db->get_user_limit_by_500();
-        if(is_array($users)){
-            foreach($users as $row){
-                $user_id        = $row['id'];
-                //check if user id exist in tabe with current month and year
-                $reciept_checker        =$this-Subscription_db->reciept_checker($user_id);
-                if($reciept_checker){
-                    //fund user
-                    $this->auto_fund_user($user_id);
-                }else{
-                    //create reciept
-                    $this->create_reciept($user_id);
+        $month_start = strtotime('first day of this month', time());
+        $month_end = strtotime('last day of this month', time());
+
+        $isFirstDay      = time() == $month_start; 
+        $isLastDay       = time() == $month_end; 
+        
+        if($isFirstDay){
+            $users      = $this->MUser_db->get_user_limit_by_500();
+            if(is_array($users)){
+                foreach($users as $row){
+                    $user_id        = $row['id'];
+                    //check if user id exist in tabe with current month and year
+                    $reciept_checker        =$this-Subscription_db->reciept_checker($user_id);
+                    if($reciept_checker){
+                        //fund user
+                        $this->auto_fund_user($user_id);
+                    }else{
+                        //create reciept
+                        $this->create_reciept($user_id);
+                    }
                 }
             }
         }
