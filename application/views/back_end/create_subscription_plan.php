@@ -81,10 +81,21 @@
 
 
                             <div class="col-md-12">
-                                <label for="amount" class="form-label">Amount</label>
+                                <label for="amount" class="form-label">Plan Amount</label>
                                 <input type="text" class="form-control" id="amount" placeholder="Enter Amount"
                                     name="amount" value="<?php echo set_value('amount'); ?>">
                                 <small style="color:red;"><?php echo form_error('amount');?></small>
+                            </div>
+
+
+
+
+                            <div class="col-md-12">
+                                <label for="e_amount" class="form-label">Expected Amount</label>
+                                <input type="text" class="form-control" id="e_amount"
+                                    placeholder="Enter Expected Amount" name="e_amount"
+                                    value="<?php echo set_value('e_amount'); ?>">
+                                <small style="color:red;"><?php echo form_error('e_amount');?></small>
                             </div>
 
 

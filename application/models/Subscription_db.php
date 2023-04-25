@@ -57,7 +57,7 @@ class Subscription_db extends My_Model{
         }
         return 'image.png';
     }
-    public function create_subscription_plan($plan_name,$description,$interval,$amount,$invoice_limit,$location, $plan_type){
+    public function create_subscription_plan($plan_name,$description,$interval,$amount,$invoice_limit,$location, $plan_type, $e_amount){
         $plan_image         = $this->get_land_image_by_location_id($location);
 
         $location_name      =$this->get_location_name_by_id($location);
@@ -70,6 +70,7 @@ class Subscription_db extends My_Model{
                          'location_name'    =>$location_name,
                          'plan_type'        =>$plan_type,
                          'plan_image'       =>$plan_image,
+                         'expected_amount'       =>$e_amount,
                     );
         $this->db->set($data);
         $this->db->insert('subscription_plan');
