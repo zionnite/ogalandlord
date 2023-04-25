@@ -199,12 +199,12 @@
 
                                                 <div class="slick-thumbnail-nav thumbnails">
                                                     <?php 
-                                        if(is_array($get_all_props_image)){
-                                            foreach($get_all_props_image as $row){
-                                                $dis_id             = $row['id'];
-                                                $dis_image_name     = $row['image_name'];
-                                        
-                                    ?>
+                                                            if(is_array($get_all_props_image)){
+                                                                foreach($get_all_props_image as $row){
+                                                                    $dis_id             = $row['id'];
+                                                                    $dis_image_name     = $row['image_name'];
+                                                            
+                                                        ?>
 
                                                     <div>
                                                         <img class="full-width"
@@ -212,9 +212,9 @@
                                                     </div>
 
                                                     <?php 
-                                            }
-                                        }
-                                    ?>
+                                                            }
+                                                        }
+                                                    ?>
 
                                                 </div>
 

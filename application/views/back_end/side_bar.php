@@ -88,6 +88,60 @@
             </ul>
         </li>
 
+        <?php }else if($user_status == 'promoter'){ ?>
+        <li class="menu-label">View Properties</li>
+
+        <li>
+            <a href="<?php echo base_url();?>Product/view_all_property">
+                <div class="parent-icon"><i class='bx bx-cart'></i>
+                </div>
+                <div class="menu-title">View Property</div>
+            </a>
+        </li>
+        <li>
+            <a href="<?php echo base_url();?>Product/product_promoting">
+                <div class="parent-icon"><i class='lni lni-magnet'></i>
+                </div>
+                <div class="menu-title">Promoting Property</div>
+            </a>
+        </li>
+
+        <?php }else if($user_status == 'm_user'){?>
+        <li class="menu-label">View Subscription</li>
+
+
+        <li>
+            <a href="<?php echo base_url();?>Subscription/view_plan">
+                <div class="parent-icon"><i class='bx bx-cart'></i>
+                </div>
+                <div class="menu-title">View Subscription</div>
+            </a>
+        </li>
+
+        <li>
+            <a href="<?php echo base_url();?>Subscription/my_plan">
+                <div class="parent-icon"><i class='lni lni-package'></i>
+                </div>
+                <div class="menu-title">My Plan</div>
+            </a>
+        </li>
+
+        <li>
+            <a href="<?php echo base_url();?>Subscription/downline">
+                <div class="parent-icon"><i class='lni lni-users'></i>
+                </div>
+                <div class="menu-title">View Downline</div>
+            </a>
+        </li>
+        <li class="menu-label">View Transaction</li>
+        <li>
+            <a href="<?php echo base_url();?>Subscription/transaction">
+                <div class="parent-icon"><i class='lni lni-package'></i>
+                </div>
+                <div class="menu-title">Payout Transaction</div>
+            </a>
+        </li>
+
         <?php }else if($user_status == 'admin' || $user_status == 'super_admin'){?>
 
 
@@ -150,7 +204,7 @@
         <?php }?>
 
 
-        <li class="menu-label">Manage Transaction</li>
+
 
         <?php if(!$admin_status){?>
 
@@ -175,6 +229,11 @@
 
         <?php }?>
 
+        <?php 
+            if($admin_status || $user_status =='agent' || $user_status == 'landlord' || $user_status == 'promoter' || $user_status == 'user'){
+        ?>
+
+        <li class="menu-label">Manage Transaction</li>
         <li>
             <a href="<?php echo base_url();?>Transaction">
                 <div class="parent-icon"><i class='lni lni-stats-up'></i>
@@ -182,22 +241,33 @@
                 <div class="menu-title">Transactions</div>
             </a>
         </li>
+        <?php 
+            }
+        ?>
 
+
+        <?php 
+            if($admin_status || $user_status =='agent' || $user_status == 'landlord'){
+        ?>
         <li>
             <a href="<?php echo base_url();?>Request">
                 <div class="parent-icon"><i class='lni lni-paint-bucket'></i>
                 </div>
                 <div class="menu-title">Request
                     <?php 
-								if(($admin_status || $user_status =='agent' || $user_status == 'landlord') && $count_unread_request > 0){
-							?>
+                        if(($admin_status || $user_status =='agent' || $user_status == 'landlord') && $count_unread_request > 0){
+                    ?>
                     <span class="badge bg-danger"><?php echo $count_unread_request;?></span>
                     <?php 
-								}
-							?>
+                        }
+                    ?>
                 </div>
             </a>
         </li>
+        <?php 
+            }
+        ?>
+
 
 
 

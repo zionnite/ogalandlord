@@ -598,7 +598,8 @@ class Subscription_db extends My_Model{
         $this->add_to_subscriber_transaction_history($subscriber_id, $amount, $trans_type, $trans_desc, $trans_status);
     }
     
-    public function_add_to_site_subscriber_balance($amount, $subscriber_id)(
+    //COME HERE ZIONNITE
+    public function add_to_site_subscriber_balance($amount, $subscriber_id){
         
         $trans_type     = 'deposit';
         $trans_status   = 'success';
@@ -606,7 +607,7 @@ class Subscription_db extends My_Model{
 
         $this->update_subscription_balance($amount);
         $this->add_to_subscriber_transaction_history($subscriber_id, $amount, $trans_type, $trans_desc, $trans_status);
-    )
+    }
 
     public function add_to_subscriber_transaction_history($subscriber_id, $amount, $trans_type, $trans_desc, $trans_status){
         $data           = array('user_id'       =>  $subscriber_id,

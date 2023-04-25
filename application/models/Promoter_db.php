@@ -313,6 +313,8 @@ class Promoter_db extends My_Model{
         $this->db->where('props_id',$props_id);
         return $this->db->from('promoter_refered')->count_all_results();
     }
+
+    
     public function get_user_refered($user_id, $props_id){
 
         $this->db->where('promoter_id',$user_id);
@@ -345,6 +347,18 @@ class Promoter_db extends My_Model{
             ->count_all_results();
     }
 
+    public function get_url_code($user_id, $props_id){
+        $this->db->where('user_id',$user_id);
+        $this->db->where('props_id', $props_id);
+
+        $query      = $this->db->get('promoter');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['url_code'];
+            }
+        }
+        return false;
+    }
 
 
 

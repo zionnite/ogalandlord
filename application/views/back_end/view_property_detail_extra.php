@@ -126,6 +126,10 @@ $user_status         	=$this->session->userdata('status');
                                     $data['props_sub_type_of_property_id ']         = $props_sub_type_of_propery;
 
 
+                                    $url_code                       =   $this->Promoter_db->get_url_code($user_id, $props_id);
+                                    $is_promoting_product           =   $this->Promoter_db->check_if_already_promoting($user_id, $props_id);
+
+
 
                            
                     ?>
@@ -208,11 +212,24 @@ $user_status         	=$this->session->userdata('status');
                                 }
                             ?>
 
+                            <?php
+                            if($is_promoting_product){
+                            ?>
                             <a href="<?php echo base_url();?>Product/get_user_refered/<?php echo $props_id;?>"
                                 data-bs-toggle="modal" class="btn btn-danger">View Downline
                                 User</a>
 
-                            <a href="#promote_product" data-bs-toggle="modal" class="btn btn-dark">Copy Link</a>
+
+                            <input type="hidden" id="link_copy"
+                                value="<?php echo base_url();?>Product/view_product/<?php echo $props_id;?>/<?php echo urlencode($url_code);?>">
+
+                            <button onclick="myFunction()" class="btn btn-dark">
+                                Copy Link
+                            </button>
+                            <?php 
+                            }
+                            ?>
+
                         </div>
 
 
@@ -663,7 +680,8 @@ $user_status         	=$this->session->userdata('status');
                                 <div class="row">
                                     <div class="col-md-3"><span>Shopping Mall </span></div>
                                     <div class="col-md-6"><span
-                                            style="font-weight:bold;"><?php echo $props_shopping_mall;?></span></div>
+                                            style="font-weight:bold;"><?php echo $props_shopping_mall;?></span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-12">
@@ -709,7 +727,8 @@ $user_status         	=$this->session->userdata('status');
                         <div class="progress" style="margin-bottom:1.5%;">
                             <div class="progress-bar bg-success" role="progressbar"
                                 style="width: <?php echo $props_crime;?>%;" aria-valuenow="<?php echo $props_crime;?>"
-                                aria-valuemin="0" aria-valuemax="100">Crime -<?php echo $props_crime;?>%</div>
+                                aria-valuemin="0" aria-valuemax="100">
+                                Crime -<?php echo $props_crime;?>%</div>
                         </div>
 
                         <div class="progress" style="margin-bottom:1.5%;">
@@ -735,7 +754,8 @@ $user_status         	=$this->session->userdata('status');
                         <div class="progress">
                             <div class="progress-bar bg-dark" role="progressbar"
                                 style="width: <?php echo $props_health;?>%;" aria-valuenow="<?php echo $props_health;?>"
-                                aria-valuemin="0" aria-valuemax="100">Health -<?php echo $props_health;?>%</div>
+                                aria-valuemin="0" aria-valuemax="100">
+                                Health -<?php echo $props_health;?>%</div>
                         </div>
                     </div>
 
@@ -755,3 +775,30 @@ $user_status         	=$this->session->userdata('status');
         }
     }
 ?>
+
+
+<script src="<?php echo base_url();?>assets_2/js/jquery.min.js"></script>
+<script src="<?php echo base_url();?>assets_2/js/sweetalert.min.js"></script>
+<script>
+function myFunction() {
+
+    var copyText = document.getElementById("link_copy");
+    navigator.clipboard.writeText(copyText.value).then(() => {
+        swal({
+            title: "Success",
+            text: "Link Copied",
+            icon: "success",
+            closeOnClickOutside: false,
+        });
+    }, () => {
+        swal({
+            title: "Error",
+            text: "Could not Copy it, please just highlight the link and copy it instead!",
+            icon: "success",
+            closeOnClickOutside: false,
+        });
+    });
+
+
+}
+</script>

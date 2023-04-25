@@ -9,9 +9,6 @@ class Login extends My_Controller {
 		$data['content'] ='auth/signin';
 		$this->load->view($this->auth_layout,$data);
 	}
-	
-
-
 
     public function auth(){
         if($this->input->post('login')){	
@@ -84,7 +81,6 @@ class Login extends My_Controller {
 		$data['content'] ='auth/forget_password';
 		$this->load->view($this->auth_layout,$data);
 	}
-
 
     public function forget_password2(){
         if($this->input->post('login')){	
@@ -184,7 +180,6 @@ class Login extends My_Controller {
         }
     }
 
-
 	public function confirm_reset_password($user_name = NULL){
 	
 
@@ -201,7 +196,6 @@ class Login extends My_Controller {
 		$this->load->view($this->auth_layout, $data);
 	}
 
-	
 	public function confirm_reset_password2(){
 		if ($this->input->post('login')) {
 			$this->form_validation->set_rules('pass', 'Password', array('required', 'min_length[5]', 'max_length[12]', 'alpha_numeric'));
@@ -290,14 +284,11 @@ class Login extends My_Controller {
 		}
 	}
 
-
     public function check_if_email_exist_request_password_tbl($email){
 		$check      = $this->Users_db->check_if_email_exist_request_password_tbl($email);
 		return $check;
 	}
 
-
-    	
 	public function admin(){
         $data['alert']			=$this->session->flashdata('alert');
 		$data['content'] ='auth/signin_admin';
@@ -345,6 +336,25 @@ class Login extends My_Controller {
     }
 
     public function verify_me($ref_id=NULL){
+        $isExist    =$this->Users_db->check_if_user_exist($ref_id);
+        if($isExist){
+            //verify user
+            $action     = $this->Users_db->verify_user_status($ref_id);
+            if($action){
+                $this->success_alert_callbark('Your verification was successful');
+            }else{
+                $this->failed_alert_callbark('Verification Failed, Database busy at the moment,please try again later!');
+            }
+        }else{
+            $this->failed_alert_callbark('This User ID does not exist, please click on the link that was sent to you so you can continue verifying process');
+        }
+
+        $data['alert']			=$this->session->flashdata('alert');
+		$data['content'] ='auth/signin';
+		$this->load->view($this->auth_layout,$data);
+    }
+
+    public function verify_user($ref_id=NULL){
         $isExist    =$this->Users_db->check_if_user_exist($ref_id);
         if($isExist){
             //verify user

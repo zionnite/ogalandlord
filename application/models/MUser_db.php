@@ -23,6 +23,29 @@ class MUser_db extends My_Model{
         return false;
     }
 
+
+    public function count_my_downline($user_id){
+        $checker    =$this->Users_db->get_user_status($user_id);
+        if($checker == 'm_user'){
+            $this->db->where('m_ref',$user_id);
+        }
+        return $this->db->from('users')->count_all_results();
+    }
+    public function get_my_downline($user_id, $offset, $per_page){
+
+        $checker    =$this->Users_db->get_user_status($user_id);
+        if($checker == 'm_user'){
+            $this->db->where('m_ref',$user_id);
+        }
+
+        $this->db->limit($per_page,$offset);
+        $query  =$this->db->get('users');
+        if($query->num_rows() > 0){
+            return $query->result_array();
+        }
+        return false;
+    }
+
     public function dUser($user_id){
         $data       = array();
 
@@ -325,6 +348,47 @@ class MUser_db extends My_Model{
 
     }
 
+
+    public function count_transaction($user_id){
+
+        $checker    =$this->Users_db->get_user_status($user_id);
+        if($checker == 'admin' || $checker == 'super_admin'){
+            $this->db->where('user_id','admin');
+        }else{
+            $this->db->where('user_id',$user_id);
+        }
+        return $this->db->from('mlm_transaction')->count_all_results();
+    }
+    public function get_transaction($user_id, $offset, $per_page){
+        
+        $checker    =$this->Users_db->get_user_status($user_id);
+        if($checker == 'admin' || $checker == 'super_admin'){
+            $this->db->where('user_id','admin');
+        }else{
+            $this->db->where('user_id',$user_id);
+        }
+        $this->db->limit($per_page,$offset);
+        $query  =$this->db->get('mlm_transaction');
+        if($query->num_rows() > 0){
+            return $query->result_array();
+        }
+        return false;
+    }
+    public function get_transaction_limit_20($user_id){
+        
+        $checker    =$this->Users_db->get_user_status($user_id);
+        if($checker == 'admin' || $checker == 'super_admin'){
+            $this->db->where('user_id','admin');
+        }else{
+            $this->db->where('user_id',$user_id);
+        }
+        $this->db->limit(20);
+        $query  =$this->db->get('mlm_transaction');
+        if($query->num_rows() > 0){
+            return $query->result_array();
+        }
+        return false;
+    }
 
     //CRON JOB
     public function get_user_limit_by_500(){

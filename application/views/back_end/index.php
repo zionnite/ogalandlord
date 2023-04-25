@@ -47,6 +47,9 @@
 					else if($user_status	== 'admin' || $user_status	== 'super_admin'){
 						$this->load->view('back_end/grid/admin_grid');
 					}
+					else if($user_status	== 'm_user'){
+						$this->load->view('back_end/grid/mlm_grid');
+					}
 				?>
 
 
@@ -207,7 +210,7 @@
                 </div>
             </div>
         </div>
-        <?php }else{?>
+        <?php }else if($user_status == 'promoter'){?>
         <div class="card radius-10">
             <div class="card-body">
                 <div class="d-flex align-items-center">
