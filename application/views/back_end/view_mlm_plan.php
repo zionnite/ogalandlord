@@ -57,6 +57,7 @@
                                         <td>Plan Start Date</td>
                                         <td>Plan End Date</td>
                                         <td></td>
+                                        <td></td>
 
                                     </tr>
                                 </thead>
@@ -114,9 +115,43 @@
                                             </a>
                                         </td>
 
+                                        <td>
+                                            <a href="#make_payment_<?php echo $id;?>" data-bs-toggle="modal"
+                                                class="btn btn-primary btn-sm">Make Payment</a>
+                                        </td>
+
+
 
 
                                     </tr>
+
+                                    <div class="modal fade" id="make_payment_<?php echo $id;?>" tabindex="-1"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Confirm Action</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to make payment for this user
+                                                        subscription plan</p>
+
+
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                    <a href="<?php echo base_url();?>Admin_panel/make_subscription_payment/<?php echo $dis_user_id;?>/<?php echo $plan_id;?>/<?php echo $plan_code;?>"
+                                                        class="btn btn-danger">Yes, Continue</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
 
                                     <?php 
                                     }

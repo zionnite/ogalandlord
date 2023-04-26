@@ -1,12 +1,16 @@
 <?php
-class Cron_job extends My_Controller{
+class CronJob extends My_Controller{
     private $CI;
 
     public function __construct(){
         parent::__construct();
         $this->CI    = &get_instance();
         $this->CI->load->model('Admin_db');
+        $this->CI->load->model('MUser_db');
+        $this->CI->load->model('Subscription_db');
+        $this->CI->load->model('Users_db');
     }
+
 
     //from here please
     public function auto_calculate_points(){
@@ -21,12 +25,12 @@ class Cron_job extends My_Controller{
                     foreach($get_downline as $low){
                         $downline_id        = $low['id'];
                         //check if user exist in my point, if false do, else ignore
-                        $point_checker      = $this->MUser_db->check_ifDownlineExistInPoint($downline_id);
+                        $point_checker      = $this->MUser_db->check_ifDownlineExistInPoint($user_id, $downline_id);
                         if(!$point_checker){
                             //get user subscribe plan
-                            $downline_plan_id           = $this->Muser_db->get_user_plan_id_subscribe($downline_id);
-                            $downline_plan_code         = $this->Muser_db->get_user_plan_code_subscribe($downline_id);
-                            $total_amount_spent         = $this->Muser_db->revenue_amount($downline_id, $downline_plan_id);
+                            $downline_plan_id           = $this->MUser_db->get_user_plan_id_subscribe($downline_id);
+                            $downline_plan_code         = $this->MUser_db->get_user_plan_code_subscribe($downline_id);
+                            $total_amount_spent         = $this->MUser_db->revenue_amount($downline_id, $downline_plan_id);
 
                             //expected amount
                             $expected_amount            = $this->MUser_db->get_plan_expected_amount($downline_plan_id);
@@ -45,22 +49,22 @@ class Cron_job extends My_Controller{
                                 if($percent_100 == $expected_amount){
                                     if($plan_limit == '1'){
                                         //outright 10point
-                                        $this->Muser_db->give_point($user_id,$downline_id, 10, $downline_plan_id);
+                                        $this->MUser_db->give_point($user_id,$downline_id, 10, $downline_plan_id);
                                     }
                                 }
                                 else {
                                     if($percent >= $expected_amount){
                                         if($plan_interval   == 'daily' && $plan_amount == '1000'){
-                                            $this->Muser_db->give_point($user_id,$downline_id, 0.5, $downline_plan_id);
+                                            $this->MUser_db->give_point($user_id,$downline_id, 0.5, $downline_plan_id);
                                         }
                                         else if($plan_interval == 'daily'  && $plan_amount =='5000'){
-                                            $this->Muser_db->give_point($user_id,$downline_id, 3, $downline_plan_id);
+                                            $this->MUser_db->give_point($user_id,$downline_id, 3, $downline_plan_id);
                                         }
                                         else if($plan_interval == 'daily'  && $plan_amount =='7000'){
-                                            $this->Muser_db->give_point($user_id,$downline_id, 4, $downline_plan_id);
+                                            $this->MUser_db->give_point($user_id,$downline_id, 4, $downline_plan_id);
                                         }
                                         else if($plan_interval == 'daily'  && $plan_amount =='15000'){
-                                            $this->Muser_db->give_point($user_id,$downline_id, 5, $downline_plan_id);
+                                            $this->MUser_db->give_point($user_id,$downline_id, 5, $downline_plan_id);
                                         }
                                     }
                                 }
@@ -68,23 +72,23 @@ class Cron_job extends My_Controller{
 
                                 if($percent_100 == $expected_amount){
                                     if($plan_limit == '1'){
-                                        $this->Muser_db->give_point($user_id,$downline_id, 2, $downline_plan_id);
+                                        $this->MUser_db->give_point($user_id,$downline_id, 2, $downline_plan_id);
                                     }
                                 }
                                 else{
                                     if($percent >= $expected_amount){
 
                                         if($plan_interval   == 'daily' && $plan_amount == '1000'){
-                                            $this->Muser_db->give_point($user_id,$downline_id, 0.5, $downline_plan_id);
+                                            $this->MUser_db->give_point($user_id,$downline_id, 0.5, $downline_plan_id);
                                         }
                                         else if($plan_interval == 'daily'  && $plan_amount =='2000'){
-                                            $this->Muser_db->give_point($user_id,$downline_id, 1, $downline_plan_id);
+                                            $this->MUser_db->give_point($user_id,$downline_id, 1, $downline_plan_id);
                                         }
                                         else if($plan_interval == 'daily'  && $plan_amount =='3000'){
-                                            $this->Muser_db->give_point($user_id,$downline_id, 1, $downline_plan_id);
+                                            $this->MUser_db->give_point($user_id,$downline_id, 1, $downline_plan_id);
                                         }
                                         else if($plan_interval == 'daily'  && $plan_amount =='4000'){
-                                            $this->Muser_db->give_point($user_id,$downline_id, 1, $downline_plan_id);
+                                            $this->MUser_db->give_point($user_id,$downline_id, 1, $downline_plan_id);
                                         }
                                     }
                                 }
@@ -105,13 +109,13 @@ class Cron_job extends My_Controller{
         $isFirstDay      = time() == $month_start; 
         $isLastDay       = time() == $month_end; 
         
-        if($isFirstDay){
+        // if($isFirstDay){
             $users      = $this->MUser_db->get_user_limit_by_500();
             if(is_array($users)){
                 foreach($users as $row){
                     $user_id        = $row['id'];
                     //check if user id exist in tabe with current month and year
-                    $reciept_checker        =$this-Subscription_db->reciept_checker($user_id);
+                    $reciept_checker        =$this->Subscription_db->reciept_checker($user_id);
                     if($reciept_checker){
                         //fund user
                         $this->auto_fund_user($user_id);
@@ -121,7 +125,7 @@ class Cron_job extends My_Controller{
                     }
                 }
             }
-        }
+        // }
     }
 
 	public function auto_fund_user($user_id=NULL){
@@ -175,7 +179,7 @@ class Cron_job extends My_Controller{
 			
             $this->Subscription_db->update_transfer_rec($user_id);
             $this->MUser_db->update_user_payable_balance($user_id, -$my_amount);
-            $this->Subscription_db->update_site_mlm_payable_balance(-$my_amount);
+            $this->MUser_db->update_site_mlm_payable_balance(-$my_amount);
 
             $trans_type     = 'withdraw';
             $trans_status   = 'success';
@@ -254,31 +258,34 @@ class Cron_job extends My_Controller{
         //execute post
         $response = curl_exec($ch);
 
-		// print_r($fields);
+		// print_r($response);
 		$result  = json_decode($response, true);
         $result  = array_change_key_case($result, CASE_LOWER);
 
+
         $status		=$result['status'];
-		if($status){
+        
+
+		// if($status){
 			
-			$error			=$result['data']['errors'];
+		// 	$error			=$result['data']['errors'];
 
-			if($error == null){
+		// 	if($error == null){
 
-				$success		=$result['data']['success'];
+		// 		$success		=$result['data']['success'];
 
-				for($i=0; $i<count($success); $i++){
-					$rc_code				= $success[$i]['recipient_code'];
-					$account_Number			= $success[$i]['details']['account_number'];
-					$props_id				= $success[$i]['metadata']['props_id'];
-					$sender_id				= $success[$i]['metadata']['sender_id'];
-					$type					= $success[$i]['metadata']['type'];
-					$dis_user_id    		= $success[$i]['metadata']['user_id'];
+		// 		for($i=0; $i<count($success); $i++){
+		// 			$rc_code				= $success[$i]['recipient_code'];
+		// 			$account_Number			= $success[$i]['details']['account_number'];
+		// 			$props_id				= $success[$i]['metadata']['props_id'];
+		// 			$sender_id				= $success[$i]['metadata']['sender_id'];
+		// 			$type					= $success[$i]['metadata']['type'];
+		// 			$dis_user_id    		= $success[$i]['metadata']['user_id'];
 
-					$this->Subscription_db->update_transfer_rec_2($rc_code,$dis_user_id);
-				}
-			}
-		}
+		// 			$this->Subscription_db->update_transfer_rec_2($rc_code,$dis_user_id);
+		// 		}
+		// 	}
+		// }
 
     }
 

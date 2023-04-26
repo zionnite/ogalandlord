@@ -2517,7 +2517,7 @@ class Admin_panel extends My_Controller {
 
         $data['page_name']      = $this->uri->segment(2);
 
-        $data['downline']        =$this->MUser_db->get_transaction($data['user_id'], $data['offset'], $data['per_page']);
+        $data['transaction']        =$this->MUser_db->get_transaction($data['user_id'], $data['offset'], $data['per_page']);
 
         
         $data['content']                ='back_end/transaction';
@@ -2833,5 +2833,559 @@ class Admin_panel extends My_Controller {
 		redirect('Admin_panel/subscription_plan');
 
 	}
+
+
+
+	public function add_mlm_user($dis_user_id=NULL){
+		$this->session_checker->my_session2();
+		$data['alert']			=$this->session->flashdata('alert');
+
+   
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+
+		$data['content']        ='back_end/make_payment_step';
+		$this->load->view($this->m_admin_layout,$data);
+	}
+		
+	public function insert_make_payment(){
+        if($this->input->post('submit')){	
+
+			// $this->form_validation->set_rules('ref_code','Ref Code', array('required'), array('required' => 'Your Location Name is Required'));
+			
+			$this->form_validation->set_rules('full_name','full_name', array('required'), array('required' => 'Full Name is Required'));
+			$this->form_validation->set_rules('email','email', array('required'), array('required' => 'Email is Required'));
+			$this->form_validation->set_rules('phone','phone', array('required'), array('required' => 'Phone is Required'));
+			$this->form_validation->set_rules('acc_name','acc_name', array('required'), array('required' => 'Account Name is Required'));
+			$this->form_validation->set_rules('acc_number','acc_number', array('required'), array('required' => 'Account Number is Required'));
+			$this->form_validation->set_rules('bank_code','bank_code', array('required'), array('required' => 'Bank Code is Required'));
+
+		
+			$ref_code     		=$this->input->post('ref_code');            
+			$full_name     		=$this->input->post('full_name');            
+			$email     			=$this->input->post('email');            
+			$phone	     		=$this->input->post('phone');            
+			$acc_name	     	=$this->input->post('acc_name');            
+			$acc_number	     	=$this->input->post('acc_number');            
+			$bank_code	     	=$this->input->post('bank_code');            
+			
+            
+			if($this->form_validation->run() == FALSE){
+                $this->failed_alert_callbark('An Error occurred during creation of your Account!');
+
+				$data['user_id']         		=$this->session->userdata('user_id');
+				$data['user_name']         		=$this->session->userdata('user_name');
+				$data['phone_no']         		=$this->session->userdata('phone_no');
+				$data['user_img']         		=$this->session->userdata('user_img');
+				$data['sex']         			=$this->session->userdata('sex');
+				$data['age']         			=$this->session->userdata('age');
+				$data['email']         			=$this->session->userdata('email');
+				$data['full_name']         		=$this->session->userdata('full_name');
+				$data['user_status']         	=$this->session->userdata('status');
+
+
+				$data['content']        ='back_end/make_payment_step';
+				$this->load->view($this->m_admin_layout,$data);
+
+			}else{
+
+				$insert	=$this->Users_db->user_admin_creation($ref_code,$full_name,$email,$phone,$acc_name,$acc_number,$bank_code);
+				if($insert	==TRUE){
+							
+					$this->success_alert_callbark('User Account Created');
+					redirect('Admin_panel/select_subscription_plan');
+				}else{
+								
+					$this->failed_alert_callbark('Database Busy, Could not perform operation, Pls Try Again Later!');
+					redirect('Admin_panel/add_mlm_user');
+				}
+			}
+		}else{
+			
+			$this->failed_alert_callbark('Please Use The Submit button to continue');
+			redirect('Admin_panel/add_mlm_user');
+		}
+    }
+
+	public function on_keyup_search(){
+
+		$output		='';
+		$search_term	=$this->input->post('search_term');
+		if($search_term != '' || $search_term != null){
+
+			$action                  = $this->Users_db->get_user_by_ref_code($search_term);
+			if(is_array($action)){
+				foreach($action as $row){
+					
+					$dis_user_full_name			= $row['full_name'];
+					$dis_user_id				= $row['id'];
+
+					$output					.='<h style="color:red;">First Ancestor: '.$dis_user_full_name.'</h>';
+					$output					 .='<input type="hidden" id="'.$dis_user_id.'" value="'.$dis_user_full_name.'" />';
+				}
+
+			}else{
+
+				$output					.='<h style="color:red;">User with this Ref Code not found</h>';
+			}
+		}
+		echo $output;
+	}
+
+
+
+	public function select_subscription_plan($dis_user_id=NULL){
+		$this->session_checker->my_session2();
+		$data['alert']			=$this->session->flashdata('alert');
+
+   
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+
+		$data['content']        ='back_end/select_subscription_plan';
+		$this->load->view($this->m_admin_layout,$data);
+	}
+
+	public function join_sub($dis_user_id=NULL, $plan_id=NULL, $plan_code=NULL){
+
+		$plan_name		=	$this->Subscription_db->get_plan_name_from_sub_tbl($plan_id);
+		$plan_amount	=	$this->Subscription_db->get_plan_amount_from_sub_tbl($plan_id);
+		$plan_interval	=	$this->Subscription_db->get_plan_interval_from_sub_tbl($plan_id);
+		
+		$action			= 	$this->Subscription_db->admin_add_subscriber($dis_user_id, $plan_id, $plan_code, $plan_name, $plan_amount, $plan_interval);
+		if($action){
+
+			//pay ancestors...
+			$trace_tree     		= $this->MUser_db->getAncestory($dis_user_id, [], 3);
+			$payables       		= $this->MUser_db->getAncestoryPayable($dis_user_id);
+			foreach ($payables as $payable) {
+				$ancestor_id                = $payable['id'];
+				$amount                     = $plan_amount * ($payable['percentage']/100);
+				// call database to credit ancestor wallet, remember to save user id somewhere for traciability
+				$this->MUser_db->pay_user($dis_user_id, $ancestor_id, $amount, $trace_tree);
+			}
+			$this->MUser_db->pay_site($plan_amount, $dis_user_id);
+
+
+			$this->success_alert_callbark('User Subscription was successful');
+			redirect('Admin_panel/add_mlm_user');
+
+
+		}else{
+			$this->failed_alert_callbark('Database Busy, Could not perform operation, Pls Try Again Later!');
+			redirect('Admin_panel/add_mlm_user');
+		}
+	}
+
+	public function make_subscription_payment($dis_user_id=NULL, $plan_id=NULL, $plan_code=NULL){
+		$plan_name		=	$this->Subscription_db->get_plan_name_from_sub_tbl($plan_id);
+		$plan_amount	=	$this->Subscription_db->get_plan_amount_from_sub_tbl($plan_id);
+		$plan_interval	=	$this->Subscription_db->get_plan_interval_from_sub_tbl($plan_id);
+
+		$dis_email      = 	$this->Users_db->get_email_by_id($dis_user_id);
+
+		$action 		= 	$this->Subscription_db->admin_insert_subscription($dis_user_id, $plan_id, $plan_code, $plan_name, $plan_amount, $plan_interval, $dis_email);
+
+		if($action){
+
+			//pay ancestors...
+			$trace_tree     		= $this->MUser_db->getAncestory($dis_user_id, [], 3);
+			$payables       		= $this->MUser_db->getAncestoryPayable($dis_user_id);
+			foreach ($payables as $payable) {
+				$ancestor_id                = $payable['id'];
+				$amount                     = $plan_amount * ($payable['percentage']/100);
+				// call database to credit ancestor wallet, remember to save user id somewhere for traciability
+				$this->MUser_db->pay_user($dis_user_id, $ancestor_id, $amount, $trace_tree);
+			}
+			$this->MUser_db->pay_site($plan_amount, $dis_user_id);
+
+
+			$this->success_alert_callbark('User Subscription was successful');
+			redirect('Admin_panel/view_user_plan/');
+
+
+		}else{
+			$this->failed_alert_callbark('Database Busy, Could not perform operation, Pls Try Again Later!');
+			redirect('Admin_panel/add_mlm_user/');
+		}
+
+	}
+
+
+
+	       
+    public function sess_search_mlm_users($qs){
+		if($qs){
+			$this->session->set_userdata('search_mlm_users',$qs);
+			return $qs;
+		}elseif($this->session->userdata('search_mlm_users')){
+			$qs	=$this->session->userdata('kesearch_mlm_usersyword');
+			return $qs;
+		}elseif($this->session->userdata('search_mlm_users') != $qs){
+			$qs	=$this->session->set_userdata('search_mlm_users',$qs);
+			return $qs;
+		}else{
+			$qs	=" ";
+			return $qs;
+		}
+	}
+
+
+	public function search_m(){
+
+		if($this->input->post('submit')){
+
+			$keyword		= $this->input->post('keyword');
+			$this->sess_search_mlm_users($keyword);
+		}else{
+
+			$this->failed_alert_callbark('Please use the button to process the submit button!');
+		}
+		redirect('Admin_panel/search_mlm_users');
+		
+	}
+
+	public function search_mlm_users(){
+		$this->session_checker->my_session2();
+        $this->chat_online_tracker->check();
+		$data['alert']					=$this->session->flashdata('alert');
+
+
+        $data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+		$keyword			         	=$this->session->userdata('search_mlm_users');
+
+        
+        $offset	=$this->uri->segment(3);
+		$total	=$this->Admin_db->count_search_mlm_users($keyword);
+		$config['base_url'] = base_url().'Admin_panel/search_mlm_users';
+		$config['total_rows'] =$total;
+		$config['per_page'] = 50;
+		$config['first_link'] = '<li>First</li>';
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li class="page-link">';
+		$config['first_tag_close'] = '</li>';
+		$config['next_tag_open'] = '<li class="page-link">';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li class="page-link">';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="page-item active"><a href="#" class="page-link">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li class="page-link">';
+		$config['num_tag_close'] = '</li>';
+		$config['prev_link'] = '&laquo';
+		$config['next_link'] = '&raquo';
+		$config['prev_tag_open'] = '<li class="page-link">';
+		$config['prev_tag_close'] = '</li>';
+		$this->pagination->initialize($config);
+		$this->pagination->cur_page = $offset;
+		$data['pagination']	=$this->pagination->create_links();
+		$data['per_page']	=$config['per_page'];
+		$data['offset']		=$offset;
+        $data['total']	    =$total;
+
+
+        $data['page_name']      = $this->uri->segment(2);
+
+        $data['get_users']      =$this->Admin_db->get_all_search_mlm_users($keyword, $data['offset'],$data['per_page']);
+
+        $data['content']        ='back_end/view_mlm_users';
+		$this->load->view($this->m_admin_layout,$data);
+	}
+
+
+    public function subscription_transaction(){
+        $this->session_checker->my_session();
+        $this->chat_online_tracker->check();
+        $data['alert']			        =$this->session->flashdata('alert');
+
+
+		$data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+
+         
+        $offset	=$this->uri->segment(3);
+		$total	=$this->Subscription_db->count_all_subscription();
+		$config['base_url'] = base_url().'Admin_panel/subscription_transaction';
+		$config['total_rows'] =$total;
+		$config['per_page'] = 10;
+		$config['first_link'] = '<li>First</li>';
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li class="page-link">';
+		$config['first_tag_close'] = '</li>';
+		$config['next_tag_open'] = '<li class="page-link">';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li class="page-link">';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="page-item active"><a href="#" class="page-link">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li class="page-link">';
+		$config['num_tag_close'] = '</li>';
+		$config['prev_link'] = '&laquo';
+		$config['next_link'] = '&raquo';
+		$config['prev_tag_open'] = '<li class="page-link">';
+		$config['prev_tag_close'] = '</li>';
+		$this->pagination->initialize($config);
+		$this->pagination->cur_page = $offset;
+		$data['pagination']	=$this->pagination->create_links();
+		$data['per_page']	=$config['per_page'];
+		$data['offset']		=$offset;
+        $data['total']	    =$total;
+
+
+        $data['page_name']      = $this->uri->segment(2);
+
+        $data['transaction']        =$this->Subscription_db->get_all_subscription($data['offset'], $data['per_page']);
+
+        
+        $data['content']                ='back_end/subscription_transaction';
+        
+		$this->load->view($this->m_admin_layout,$data);
+	}
+
+
+
+		       
+    public function sess_search_to_date_sub($qs){
+		if($qs){
+			$this->session->set_userdata('to_date_sub',$qs);
+			return $qs;
+		}elseif($this->session->userdata('to_date_sub')){
+			$qs	=$this->session->userdata('to_date_sub');
+			return $qs;
+		}elseif($this->session->userdata('to_date_sub') != $qs){
+			$qs	=$this->session->set_userdata('to_date_sub',$qs);
+			return $qs;
+		}else{
+			$qs	=" ";
+			return $qs;
+		}
+	}
+      
+    public function sess_search_from_date_sub($qs){
+		if($qs){
+			$this->session->set_userdata('from_date_sub',$qs);
+			return $qs;
+		}elseif($this->session->userdata('from_date_sub')){
+			$qs	=$this->session->userdata('from_date_sub');
+			return $qs;
+		}elseif($this->session->userdata('from_date_sub') != $qs){
+			$qs	=$this->session->set_userdata('from_date_sub',$qs);
+			return $qs;
+		}else{
+			$qs	=" ";
+			return $qs;
+		}
+	}
+
+
+	public function date_search_sub(){
+
+		if($this->input->post('submit')){
+
+			$to_date		= $this->input->post('to_date');
+			$from_date		= $this->input->post('from_date');
+			$this->sess_search_to_date_sub($to_date);
+			$this->sess_search_from_date_sub($from_date);
+		}else{
+
+			$this->failed_alert_callbark('Please use the button to process the submit button!');
+		}
+		redirect('Admin_panel/filter_subscription_date');
+		
+	}
+
+
+	public function filter_subscription_date(){
+
+		$this->session_checker->my_session2();
+        $this->chat_online_tracker->check();
+		$data['alert']					=$this->session->flashdata('alert');
+
+
+        $data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+
+		$keyword_1			         	=$this->session->userdata('to_date_sub');
+		$keyword_2			         	=$this->session->userdata('from_date_sub');
+
+        
+        $offset	=$this->uri->segment(3);
+		$total	=$this->Subscription_db->count_filter_date_sub($keyword_1, $keyword_2);
+		$config['base_url'] = base_url().'Admin_panel/filter_subscription_date';
+		$config['total_rows'] =$total;
+		$config['per_page'] = 50;
+		$config['first_link'] = '<li>First</li>';
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li class="page-link">';
+		$config['first_tag_close'] = '</li>';
+		$config['next_tag_open'] = '<li class="page-link">';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li class="page-link">';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="page-item active"><a href="#" class="page-link">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li class="page-link">';
+		$config['num_tag_close'] = '</li>';
+		$config['prev_link'] = '&laquo';
+		$config['next_link'] = '&raquo';
+		$config['prev_tag_open'] = '<li class="page-link">';
+		$config['prev_tag_close'] = '</li>';
+		$this->pagination->initialize($config);
+		$this->pagination->cur_page = $offset;
+		$data['pagination']	=$this->pagination->create_links();
+		$data['per_page']	=$config['per_page'];
+		$data['offset']		=$offset;
+        $data['total']	    =$total;
+
+
+        $data['page_name']      	= $this->uri->segment(2);
+
+        $data['transaction']      	=$this->Subscription_db->get_all_filter_date_sub($keyword_1, $keyword_2, $data['offset'],$data['per_page']);
+
+        $data['content']        ='back_end/subscription_transaction_2';
+		$this->load->view($this->m_admin_layout,$data);
+	}
+
+	       
+    public function sess_search_keyword_sub($qs){
+		if($qs){
+			$this->session->set_userdata('keyword_sub_2',$qs);
+			return $qs;
+		}elseif($this->session->userdata('keyword_sub_2')){
+			$qs	=$this->session->userdata('keyword_sub_2');
+			return $qs;
+		}elseif($this->session->userdata('keyword_sub_2') != $qs){
+			$qs	=$this->session->set_userdata('keyword_sub_2',$qs);
+			return $qs;
+		}else{
+			$qs	=" ";
+			return $qs;
+		}
+	}
+
+
+	public function search_subs(){
+
+		if($this->input->post('submit')){
+
+			$keyword		= $this->input->post('keyword');
+			$this->sess_search_keyword_sub($keyword);
+		}else{
+
+			$this->failed_alert_callbark('Please use the button to process the submit button!');
+		}
+		redirect('Admin_panel/search_subscription');
+		
+	}
+
+	public function search_subscription(){
+		$this->session_checker->my_session2();
+        $this->chat_online_tracker->check();
+		$data['alert']					=$this->session->flashdata('alert');
+
+
+        $data['user_id']         		=$this->session->userdata('user_id');
+		$data['user_name']         		=$this->session->userdata('user_name');
+		$data['phone_no']         		=$this->session->userdata('phone_no');
+		$data['user_img']         		=$this->session->userdata('user_img');
+		$data['sex']         			=$this->session->userdata('sex');
+		$data['age']         			=$this->session->userdata('age');
+		$data['email']         			=$this->session->userdata('email');
+		$data['full_name']         		=$this->session->userdata('full_name');
+		$data['user_status']         	=$this->session->userdata('status');
+
+		$keyword			         	=$this->session->userdata('keyword_sub_2');
+
+        
+        $offset	=$this->uri->segment(3);
+		$total	=$this->Subscription_db->count_search_subscription($keyword);
+		$config['base_url'] = base_url().'Admin_panel/search_subscription';
+		$config['total_rows'] =$total;
+		$config['per_page'] = 50;
+		$config['first_link'] = '<li>First</li>';
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li class="page-link">';
+		$config['first_tag_close'] = '</li>';
+		$config['next_tag_open'] = '<li class="page-link">';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li class="page-link">';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="page-item active"><a href="#" class="page-link">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li class="page-link">';
+		$config['num_tag_close'] = '</li>';
+		$config['prev_link'] = '&laquo';
+		$config['next_link'] = '&raquo';
+		$config['prev_tag_open'] = '<li class="page-link">';
+		$config['prev_tag_close'] = '</li>';
+		$this->pagination->initialize($config);
+		$this->pagination->cur_page = $offset;
+		$data['pagination']	=$this->pagination->create_links();
+		$data['per_page']	=$config['per_page'];
+		$data['offset']		=$offset;
+        $data['total']	    =$total;
+
+
+        $data['page_name']      = $this->uri->segment(2);
+
+        $data['transaction']      =$this->Subscription_db->get_all_search_subscription($keyword, $data['offset'],$data['per_page']);
+
+        $data['content']        ='back_end/subscription_transaction_2';
+		$this->load->view($this->m_admin_layout,$data);
+	}
+
 
 }

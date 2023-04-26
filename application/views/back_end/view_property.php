@@ -205,6 +205,11 @@ else{
 
             </div>
         </div>
+
+
+
+
+
         <div class="row">
             <div class="col-xl-12 mx-auto">
                 <h6 class="mb-0 text-uppercase"><?php echo $title;?></h6>
@@ -433,7 +438,8 @@ else{
                                                                                         style="margin-top:1%;">
                                                                                         <div class="col-md-6">
                                                                                             <span>Project Purpose:
-                                                                                            </span></div>
+                                                                                            </span>
+                                                                                        </div>
                                                                                         <div class="col-md-6"><span
                                                                                                 style="font-weight:bold;"><?php echo $props_purpose;?></span>
                                                                                         </div>
@@ -442,7 +448,8 @@ else{
                                                                                     <div class="row"
                                                                                         style="margin-top:1%;">
                                                                                         <div class="col-md-6">
-                                                                                            <span>Bedroom: </span></div>
+                                                                                            <span>Bedroom: </span>
+                                                                                        </div>
                                                                                         <div class="col-md-6"><span
                                                                                                 style="font-weight:bold;"><?php echo $props_bedrom;?></span>
                                                                                         </div>
@@ -462,7 +469,8 @@ else{
                                                                                         style="margin-top:1%;">
                                                                                         <div class="col-md-6">
                                                                                             <span>Types Of Property:
-                                                                                            </span></div>
+                                                                                            </span>
+                                                                                        </div>
                                                                                         <div class="col-md-6"><span
                                                                                                 style="font-weight:bold;"><?php echo $props_type_of_propery;?></span>
                                                                                         </div>
@@ -481,7 +489,8 @@ else{
                                                                                     <div class="row"
                                                                                         style="margin-top:1%;">
                                                                                         <div class="col-md-6">
-                                                                                            <span>Price: </span></div>
+                                                                                            <span>Price: </span>
+                                                                                        </div>
                                                                                         <div class="col-md-6"><span
                                                                                                 style="font-weight:bold;"><?php echo $props_price;?></span>
                                                                                         </div>
@@ -495,7 +504,8 @@ else{
                                                                                 </div>
                                                                                 <div class="row" style="margin-top:1%;">
                                                                                     <div class="col-md-12">
-                                                                                        <span>Description: </span></div>
+                                                                                        <span>Description: </span>
+                                                                                    </div>
                                                                                     <div class="col-md-12"><span
                                                                                             style="font-weight:bold;"><?php echo $props_description;?></span>
                                                                                     </div>
@@ -528,7 +538,8 @@ else{
                                                                             <div class="col-md-12">
                                                                                 <div class="row">
                                                                                     <div class="col-md-12">
-                                                                                        <span>Condition: </span></div>
+                                                                                        <span>Condition: </span>
+                                                                                    </div>
                                                                                     <div class="col-md-12"><span
                                                                                             style="font-weight:bold;"><?php echo $props_condition;?></span>
                                                                                     </div>

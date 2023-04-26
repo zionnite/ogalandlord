@@ -43,7 +43,7 @@
     <!--navigation-->
     <ul class="metismenu" id="menu">
         <li>
-            <a href="<?php echo base_url();?>Dashboard">
+            <a href="<?php echo base_url();?>Admin_panel/mlm_dashboard">
                 <div class="parent-icon"><i class='bx bx-home-circle'></i>
                 </div>
                 <div class="menu-title">Dashboard</div>
@@ -53,13 +53,26 @@
 
         <li class="menu-label">Manage User</li>
 
+
         <li>
-            <a href="<?php echo base_url();?>Admin_panel/view_mlm_users">
-                <div class="parent-icon"><i class="fadeIn animated lni lni-users"></i>
-                </div>
-                <div class="menu-title">View All User</div>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class='lni lni-users'></i></div>
+                <div class="menu-title">Users</div>
             </a>
+            <ul>
+                <li> <a href="<?php echo base_url();?>Admin_panel/add_mlm_user"><i class="bx bx-right-arrow-alt"></i>Add
+                        New User</a></li>
+
+                <li> <a href="<?php echo base_url();?>Admin_panel/view_mlm_users"><i
+                            class="bx bx-right-arrow-alt"></i>View All User</a></li>
+
+
+
+
+            </ul>
         </li>
+
+
 
 
 
@@ -86,7 +99,14 @@
             <a href="<?php echo base_url();?>Admin_panel/transaction">
                 <div class="parent-icon"><i class='lni lni-stats-up'></i>
                 </div>
-                <div class="menu-title">Transactions</div>
+                <div class="menu-title">Payout</div>
+            </a>
+        </li>
+        <li>
+            <a href="<?php echo base_url();?>Admin_panel/subscription_transaction">
+                <div class="parent-icon"><i class='lni lni-stats-up'></i>
+                </div>
+                <div class="menu-title">Subscription </div>
             </a>
         </li>
 

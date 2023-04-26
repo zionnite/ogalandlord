@@ -1527,4 +1527,46 @@ class Admin_db extends My_Model{
         }
         return false;
     }
+
+
+
+    public function count_search_mlm_users($keyword){
+
+        $this->db->like('user_name',$this->db->escape_like_str($keyword,'both'));
+        $this->db->where('status','m_user');
+        $this->db->or_like('full_name',$this->db->escape_like_str($keyword,'both'));
+        $this->db->where('status','m_user');
+        $this->db->or_like('phone',$this->db->escape_like_str($keyword,'both'));
+        $this->db->where('status','m_user');
+        $this->db->or_like('email',$this->db->escape_like_str($keyword,'both'));
+        $this->db->where('status','m_user');
+
+        return $this->db->from('users')->count_all_results();
+    }
+
+
+    public function get_all_search_mlm_users($keyword, $offset, $per_page){
+        
+        $this->db->like('user_name',$this->db->escape_like_str($keyword,'both'));
+        $this->db->where('status','m_user');
+        $this->db->or_like('full_name',$this->db->escape_like_str($keyword,'both'));
+        $this->db->where('status','m_user');
+        $this->db->or_like('phone',$this->db->escape_like_str($keyword,'both'));
+        $this->db->where('status','m_user');
+        $this->db->or_like('email',$this->db->escape_like_str($keyword,'both'));
+        $this->db->where('status','m_user');
+
+        $this->db->order_by('id','desc');
+        $this->db->limit($per_page,$offset);
+
+        $query		=$this->db->get('users');
+		if($query->num_rows() > 0){
+
+            return $query->result_array();
+		}
+
+		return $this->alert_callbark('danger','No Search Term Found!');
+    }
+
+
 }

@@ -15,11 +15,46 @@
 
         </div>
         <!--end breadcrumb-->
+
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+
+                        <div class="col-lg-12 col-xl-12">
+                            <form class="" method="post" action="<?php echo base_url();?>Admin_panel/search_m">
+                                <div class="row">
+                                    <div class="col-md-10">
+                                        <div class="position-relative">
+                                            <input type="text" class="form-control ps-5" name="keyword"
+                                                placeholder="Search Product..."> <span
+                                                class="position-absolute top-50 product-show translate-middle-y"><i
+                                                    class="bx bx-search"></i></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="position-relative">
+                                            <input type="submit" name="submit"
+                                                class="btn btn-danger btn-sm btn-block p-2" value="Search">
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <?php echo isset($alert)?$alert:NULL;?>
+
         <div class="row">
             <div class="col-xl-12 mx-auto">
                 <h6 class="mb-0 text-uppercase">MLM Users</h6>
                 <hr>
-                <?php echo isset($alert)?$alert:NULL;?>
 
 
 
@@ -43,11 +78,10 @@
                                         <th>User Phone</th>
                                         <th>User Email</th>
                                         <th>User Downline</th>
-                                        <th>View Downline</th>
-                                        <th>View Subscription</th>
-                                        <th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
 
-                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -103,6 +137,7 @@
                                         </td>
 
 
+
                                     </tr>
 
                                     <?php 
@@ -113,7 +148,7 @@
                                 </tbody>
                                 <?php 
                             if(!is_array($get_users)){
-                                echo $this->Admin_db->alert_callbark('danger','You have no User in MLM list!');
+                                echo $this->Admin_db->alert_callbark('danger','You have no User in MLM list or Search Term not found!');
                             }
                             ?>
                             </table>

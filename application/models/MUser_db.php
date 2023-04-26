@@ -113,19 +113,19 @@ class MUser_db extends My_Model{
         $results = [];
         $ancestors = $this->getAncestory($user_id, [], 3);
 
-        for ($i = 0; $i < 4 && $i < count($ancestors); $i++) {
+        for ($i = 0; $i < 3 && $i < count($ancestors); $i++) {
             switch($i +  1) {
                 case 1:
-                    array_push($results, ['id'=>$ancestors[$i], 'percentage'=> 20]);
+                    array_push($results, ['id'=>$ancestors[$i], 'percentage'=> 3.5]);
                     break;
                 case 2:
-                    array_push($results, ['id'=>$ancestors[$i], 'percentage'=> 10]);
+                    array_push($results, ['id'=>$ancestors[$i], 'percentage'=> 1.5]);
                     break;
                 case 3:
-                    array_push($results, ['id'=>$ancestors[$i], 'percentage'=> 5]);
+                    array_push($results, ['id'=>$ancestors[$i], 'percentage'=> 0.7]);
                     break;
                 case 4:
-                    array_push($results, ['id'=>$ancestors[$i], 'percentage'=> 2]);
+                    array_push($results, ['id'=>$ancestors[$i], 'percentage'=> 0.3]);
                     break;
             }
         }
@@ -277,7 +277,19 @@ class MUser_db extends My_Model{
         return false;
     }
     
-    public function pay_user($decendant_id, $user_id, $amount, $trace_tree){
+    public function pay_user($decendant_id, $user_id, $amount, $ancentory_tree){
+        $count        = count($ancentory_tree);
+        $array          ='';
+        $trace_tree          ='';
+        foreach($ancentory_tree as $key){
+            if($count   == 1){
+                $trace_tree  =$key;
+            }else{
+                
+                $array  .=$key.',';
+                $trace_tree  =   substr($array, 0, -1);
+            }
+        }
         $user_payable_balance           = $this->getMPayableBalance($user_id);
         $user_total_balance             = $this->getMTotalBalance($user_id);
 
@@ -523,6 +535,16 @@ class MUser_db extends My_Model{
         }
         return false;
     }
+    
+    public function check_ifDownlineExistInPoint($user_id, $downline_id){
+        $this->db->where('user_id',$user_id);
+        $this->db->where('downline_id',$downline_id);
 
-   
+        $query      = $this->db->get('my_point');
+        if($query->num_rows() > 0){
+            return true;
+        }
+        return false;
+
+    }
 }

@@ -7,11 +7,25 @@ class TesterCont  extends My_Controller{
     }
 
     public function index() {
-        $user_id = 38;
+        $user_id = 45;
         $currentTimestamp = time();
         // get from database lastRunTimestamp
         $users        = $this->MUser_db->getAncestory($user_id, [], 3);
-        print_r($users);
+        // $count        = count($users);
+        // $array          ='';
+        // $final          ='';
+        // foreach($users as $key){
+        //     if($count   == 1){
+        //         $final  =$key;
+        //     }else{
+                
+        //         $array  .=$key.',';
+        //         $final  =   substr($array, 0, -1);
+        //     }
+        // }
+        // br();
+        // echo $final;
+        // // print_r($users);
 
         $total_amount = 10000; 
         // accept total amount to platform = getTotalPayments($user_id, $currentTimestamp) 
@@ -30,7 +44,7 @@ class TesterCont  extends My_Controller{
             foreach ($payables as $payable) {
                 $user_id = $payable['id'];
                 $amount = $total_amount * ($payable['percentage']/100);
-                // echo $user_id.' '.$amount.br();
+                echo $user_id.' '.$amount.br();
                 // call database to credit ancestor wallet, remember to save user id somewhere for traciability
             }
         }

@@ -2,13 +2,13 @@
     <div class="page-content">
         <!--breadcrumb-->
         <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-            <div class="breadcrumb-title pe-3">Dashboard</div>
+            <div class="breadcrumb-title pe-3">Transaction</div>
             <div class="ps-3">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0 p-0">
                         <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                         </li>
-                        <li class="breadcrumb-item active" aria-current="page">Downline</li>
+                        <li class="breadcrumb-item active" aria-current="page">Payout</li>
                     </ol>
                 </nav>
             </div>
@@ -43,10 +43,9 @@
                         /**
                          * if its deposit, it can be trace
                          */
-						$trans		= $this->MUser_db->get_transaction_limit_20($user_id);
-                        if(is_array($trans)){
+                        if(is_array($transaction)){
                             $i=0;
-                            foreach($trans as $row){
+                            foreach($transaction as $row){
                                 $i++;
                                 $id                 =$row['id'];
                                 $dis_user_id        =$row['user_id'];
@@ -76,7 +75,7 @@
                                 if($trans_type  == 'deposit'){?>
                                     <div class="badge rounded-pill bg-light-success text-success w-100">Completed</div>
                                     <?php }else{?>
-                                    <div class="badge rounded-pill bg-light-danger text-danger w-100">Completed</div>
+                                    <div class="badge rounded-pill bg-light-danger text-danger w-100">Withdraw</div>
                                     <?php 
                             }
                             ?>
@@ -99,7 +98,7 @@
 
                         </tbody>
                         <?php 
-                            if(!is_array($trans)){
+                            if(!is_array($transaction)){
                                 echo $this->Admin_db->alert_callbark('danger','You have no Payout transaction at the moment');
                             }
                        ?>

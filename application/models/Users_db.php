@@ -23,6 +23,15 @@ class Users_db extends My_Model{
         return false;
    }
 
+   public function get_user_by_ref_code($ref_code){
+        $this->db->where('m_ref_code',$ref_code);
+        $query  =$this->db->get('users');
+        if($query->num_rows() > 0){
+            return $query->result_array();
+        }
+        return false;
+   }
+
    public function get_user_full_name_by_id($user_id){
         $this->db->where('id',$user_id);
         $query      =$this->db->get('users');
@@ -201,8 +210,8 @@ class Users_db extends My_Model{
 
             $promoter_id    = $this->Promoter_db->get_promoter_id_by_url_code(urldecode($url_code));
             $data   = array(
-                'props_id'  =>$props_id,
-                'user_id'   => $user_id,
+                'props_id'      => $props_id,
+                'user_id'       => $user_id,
                 'promoter_id'   => $promoter_id,
                 'url_code'      => urldecode($url_code),
             );
@@ -214,7 +223,64 @@ class Users_db extends My_Model{
         return false;
    }
 
-   public function loing_user($email,$pass){
+    public function user_admin_creation($ref_code,$full_name,$email,$phone,$acc_name,$acc_number,$bank_code){
+
+        $bank_name      = $this->Bank_db->get_bank_name_by_bank_code($bank_code);
+        if($ref_code    == null){
+            $data           = array(
+                                    'status'            =>  'm_user',
+                                    //'m_ref'             =>  $ref_code,
+                                    'is_m_ref'          =>  'no',
+                                    'full_name'         =>  $full_name,
+                                    'email'             =>  $email,
+                                    'phone'             =>  $phone,
+                                    'user_name'         =>  $phone,
+                                    'password'          =>  md5($phone),
+                                    'account_name'      =>  $acc_name,
+                                    'account_number'    =>  $acc_number,
+                                    'bank_code'         =>  $bank_code,
+                                    'bank_name'         =>  $bank_name,
+                                    'isbank_verify'     =>  'no',
+                                    'date_created'      =>  date('Y-m-d H:i:s'),
+            );
+        }else{
+            $data           = array(
+                                'status'            =>  'm_user',
+                                'm_ref'             =>  $ref_code,
+                                'is_m_ref'          =>  'yes',
+                                'full_name'         =>  $full_name,
+                                'email'             =>  $email,
+                                'phone'             =>  $phone,
+                                'user_name'         =>  $phone,
+                                'password'          =>  md5($phone),
+                                'account_name'      =>  $acc_name,
+                                'account_number'    =>  $acc_number,
+                                'bank_code'         =>  $bank_code,
+                                'bank_name'         =>  $bank_name,
+                                'isbank_verify'     =>  'no',
+                                'date_created'      =>  date('Y-m-d H:i:s'),
+        );
+        }
+        $this->db->set($data);
+        $this->db->insert('users');
+        $user_id    =$this->db->insert_id();
+        if($this->db->affected_rows() > 0 ){
+
+            $e_reg_no      =5190000000000;
+            $e_reg_no_2    =$e_reg_no+$user_id;
+            $data = ['m_ref_code' => $e_reg_no_2];
+            $this->db->where('id',$user_id);
+            $this->db->set($data);
+            $this->db->update('users');
+
+            $data4=array('m_dis_user_id' => $user_id);
+            $this->session->set_userdata($data4);
+            return	true;
+        }
+        return false;
+    }
+
+    public function loing_user($email,$pass){
         $this->db->where('user_name',$email);
         $this->db->where('password',md5($pass));
 
@@ -258,7 +324,7 @@ class Users_db extends My_Model{
         }else{
             return 	FALSE;
         }
-   }
+    }
 
    public function login_admin($email,$pass){
          $this->db->where('user_name',$email);

@@ -279,7 +279,7 @@ class Subscription_db extends My_Model{
             'plan_id'                   =>  $plan_id,
             'plan_code'                 =>  $plan_code,
             'amount'                    =>  $plan_amount,
-            'paid_date'                 =>  date('Y-m-d H:i:s'),
+            'paid_date'                 =>  date('Y-m-d H:i:sa'),
             'day'                       =>  date('d'),
             'month'                     =>  date('M'),
             'year'                      =>  date('Y'),
@@ -636,7 +636,7 @@ class Subscription_db extends My_Model{
     public function reciept_checker($user_id){
         $this->db->where('user_id', $user_id);
         $this->db->where('month', date('M'));
-        $this->db->where('year', year('Y'));
+        $this->db->where('year', date('Y'));
         $this->db->where('status','pending');
         
         $query      = $this->db->get('auto_transfer_rec');
@@ -709,7 +709,7 @@ class Subscription_db extends My_Model{
     public function update_transfer_rec_4($user_id){
         $data   = array('status' => 'failed');
         $this->db->set($data);
-       $this->db->where('user_id',$user_id);
+        $this->db->where('user_id',$user_id);
         $this->db->where('month',date('M'));
         $this->db->where('year',date('Y'));
         $this->db->where('status','unpaid');
@@ -738,4 +738,222 @@ class Subscription_db extends My_Model{
         }
         return false;
     }
+
+    public function get_plan_name_from_sub_tbl($plan_id){
+
+        $this->db->where('plan_id', $plan_id);
+        $query  = $this->db->get('subscription_plan');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_name'];
+            }
+        }
+        return false;
+    }
+
+    public function get_plan_amount_from_sub_tbl($plan_id){
+
+        $this->db->where('plan_id', $plan_id);
+        $query  = $this->db->get('subscription_plan');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_amount'];
+            }
+        }
+        return false;
+    }
+
+    public function get_plan_interval_from_sub_tbl($plan_id){
+
+        $this->db->where('plan_id', $plan_id);
+        $query  = $this->db->get('subscription_plan');
+        if($query->num_rows() > 0){
+            foreach($query->result_array() as $row){
+                return $row['plan_interval'];
+            }
+        }
+        return false;
+    }
+
+
+
+    public function admin_update_subscriber_detail($customer_email, $plan_code, $plan_interval){
+
+        $plan_limit     = $this->get_plan_limit_by_plan_id($plan_code);
+        if($plan_limit > '1'){
+            if($plan_interval   == 'hourly'){
+
+                $end_date   = $this->date_me($plan_limit,'hours');
+            }
+            else if($plan_interval  == 'daily'){
+                $end_date   = $this->date_me($plan_limit,'days');
+            }
+            else if($plan_interval  == 'weekly'){
+                $end_date   = $this->date_me($plan_limit,'weeks');
+            }
+            else if($plan_interval  == 'monthly'){
+                $end_date   = $this->date_me($plan_limit,'months');
+            }
+            else if($plan_interval == 'annually'){
+                $end_date   = $this->date_me($plan_limit,'years');
+            }
+
+        }else{
+             $end_date   = date('Y-m-d H:i:s');
+        }
+
+        
+
+        $data       = array(
+                        'sub_end_date'=> $end_date,
+                        'status'        => 'active',
+                    );
+        $this->db->set($data);
+        $this->db->where('email',$customer_email);
+        $this->db->where('plan_code',$plan_code);
+        $this->db->update('subscriber_list');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+    }
+
+
+    public function admin_insert_subscription($user_id, $plan_id, $plan_code, $plan_name, $plan_amount, $plan_interval, $email){
+
+
+        $data   = array(
+            'user_id'                   =>  $user_id,
+            'customer_email'            =>  $email,
+            'plan_id'                   =>  $plan_id,
+            'plan_code'                 =>  $plan_code,
+            'amount'                    =>  $plan_amount,
+            'paid_date'                 =>  date('Y-m-d H:i:sa'),
+            'day'                       =>  date('d'),
+            'month'                     =>  date('M'),
+            'year'                      =>  date('Y'),
+            'time'                      =>  time(),
+            'status'                    =>  'success',
+            'is_card'                   =>  'no',
+        );
+
+        $this->db->set($data);
+        $this->db->insert('subscription');
+        if($this->db->affected_rows() > 0){
+            return true;
+        }
+        return false;
+
+    }
+
+
+    public function admin_add_subscriber($user_id, $plan_id, $plan_code, $plan_name, $plan_amount, $plan_interval){
+        $email              = $this->Users_db->get_email_by_id($user_id);
+        $plan_limit         = $this->get_plan_limit_by_plan_id($plan_code);
+            
+        if($plan_limit  == '1'){
+            $plan_interval  = 'OutRight';
+        }
+
+        $data       = array(
+                            'user_id'           =>  $user_id,
+                            'email'             =>  $email,
+                            'plan_id'           =>  $plan_id,
+                            'plan_code'         =>  $plan_code,
+                            'plan_name'         =>  $plan_name,
+                            'plan_amount'       =>  $plan_amount,
+                            'plan_interval'     =>  $plan_interval,
+                            'sub_start_date'    =>  date('Y-m-d H:i:s'),
+                            'user_type'         =>  'offline',
+        );
+
+        $this->db->set($data);
+        $this->db->insert('subscriber_list');
+        if($this->db->affected_rows() > 0){
+
+            //update subscription table and subscriptionList tbl
+            $this->admin_update_subscriber_detail($email, $plan_code, $plan_interval);
+            $this->Subscription_db->admin_insert_subscription($user_id, $plan_id, $plan_code, $plan_name, $plan_amount, $plan_interval, $email);
+            
+            return true;
+        }
+        return false;
+        
+    }
+
+
+        //subscription
+    public function count_all_subscription(){
+		return $this->db->from('subscription')
+        ->count_all_results();
+	}
+
+    
+    public function get_all_subscription($offset,$per_page){
+        $this->db->limit($per_page,$offset);
+        $query  =$this->db->get('subscription');
+        if($query->num_rows() > 0){
+            return $query->result_array();
+        }
+        return false;
+    }
+    
+
+
+
+    public function count_filter_date_sub($keyword_1, $keyword_2){
+
+        $keyword_1	=date('d-m-Y H:i:sa',strtotime($keyword_1));
+        $keyword_2	=date('d-m-Y H:i:sa',strtotime($keyword_2));
+        
+        $this->db->where('paid_date <',$keyword_1);
+        $this->db->where('paid_date >',$keyword_2);
+        return $this->db->from('subscription')->count_all_results();
+    }
+
+
+    public function get_all_filter_date_sub($keyword_1, $keyword_2, $offset, $per_page){
+
+        $keyword_1	=date('d-m-Y H:i:sa',strtotime($keyword_1));
+        $keyword_2	=date('d-m-Y H:i:sa',strtotime($keyword_2));
+        
+        $this->db->where('paid_date <',$keyword_1);
+        $this->db->where('paid_date >',$keyword_2);
+
+        $this->db->order_by('id','desc');
+        $this->db->limit($per_page,$offset);
+
+        $query		=$this->db->get('subscription');
+		if($query->num_rows() > 0){
+
+            return $query->result_array();
+		}
+
+		return false;
+    }
+
+
+
+    public function count_search_subscription($keyword){
+
+        $this->db->like('customer_email',$this->db->escape_like_str($keyword,'both'));
+        return $this->db->from('subscription')->count_all_results();
+    }
+
+
+    public function get_all_search_subscription($keyword, $offset, $per_page){
+        
+        $this->db->like('customer_email',$this->db->escape_like_str($keyword,'both'));
+        $this->db->order_by('id','desc');
+        $this->db->limit($per_page,$offset);
+
+        $query		=$this->db->get('subscription');
+		if($query->num_rows() > 0){
+
+            return $query->result_array();
+		}
+
+		return false;
+    }
+
 }

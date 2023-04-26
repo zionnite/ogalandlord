@@ -116,7 +116,7 @@ $total_earning              = $this->MUser_db->get_site_mlm_total_balance();
                                 if($trans_type  == 'deposit'){?>
                                     <div class="badge rounded-pill bg-light-success text-success w-100">Completed</div>
                                     <?php }else{?>
-                                    <div class="badge rounded-pill bg-light-danger text-danger w-100">Completed</div>
+                                    <div class="badge rounded-pill bg-light-danger text-danger w-100">Withdraw</div>
                                     <?php 
                             }
                             ?>

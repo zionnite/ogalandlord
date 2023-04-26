@@ -312,7 +312,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>S/N</th>
-                                        <th>Name</th>
+                                        <th></th>
                                         <th>Plan Code</th>
                                         <th>Subscription Code</th>
                                         <th>Amount</th>
@@ -348,9 +348,9 @@
                                                   
 
                                                     if($msg_status  == 'success'){
-                                                        $msg    = 'Card was Charge';
+                                                        $msg    = 'Successful';
                                                     }else{
-                                                        $msg    ='Could not charge card';
+                                                        $msg    ='Not Sucessful';
                                                     }
 
                                             ?>
