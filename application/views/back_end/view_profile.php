@@ -82,6 +82,7 @@
 
 									$agent_login_status         = $row['login_status'];
 									$dis_isbank_verify         		= $row['isbank_verify'];
+									$m_ref_code         		= $row['m_ref_code'];
 
 									$admin_status	         	=$this->session->userdata('admin_status');
 
@@ -242,8 +243,8 @@
 
 
                         <?php 
-									if($user_id == $dis_user_id && !$admin_status){
-								?>
+						if($user_id == $dis_user_id && !$admin_status){
+						?>
                         <div class="row">
                             <div class="col-sm-12">
                                 <div class="card">
@@ -306,54 +307,58 @@
 										?>
 
                                 <?php
-											if($dis_user_id == $user_id && !$admin_status){
-										?>
+								if(($dis_user_id == $user_id && !$admin_status) && $dis_status !='promoter'){
+								?>
                                 <div class="card">
                                     <div class="card-body">
                                         <h5>Your Referal Link</h5>
+
                                         <?php
 													if($dis_status =='user'){
 														$new_status	='USR';
+                                                        $ref_link       = base_url().'Register/ref/'.$dis_user_id.'/'.$new_status;
 
 													}else if($dis_status =='landlord'){
 														$new_status	='LAD';
+                                                        $ref_link       = base_url().'Register/ref/'.$dis_user_id.'/'.$new_status;
+
 
 													}else if($dis_status == 'agent'){
 														$new_status	='AGT';
-													}else{
+                                                        $ref_link       = base_url().'Register/ref/'.$dis_user_id.'/'.$new_status;
+													}else if($dis_status    == 'm_user'){
 														$new_status ='NO';
-													}
+                                                        $ref_link       = base_url().'Register/regmlm/'.$m_ref_code;
+													}else{
+                                                        $ref_link='';
+                                                    }
 												?>
-                                        <span
-                                            style="color:red;"><?php echo base_url();?>Register/ref/<?php echo $user_id;?>/<?php echo $new_status;?></span>
-                                        <input type="hidden" id="link_copy"
-                                            value="<?php echo base_url();?>Register/ref/<?php echo $user_id;?>/<?php echo $new_status;?>">
+                                        <span style="color:red;"><?php echo $ref_link;?></span>
+
+                                        <input type="hidden" id="link_copy" value="<?php echo $ref_link;?>">
                                         <br />
+
                                         <button onclick="myFunction()" class="btn btn-danger btn-sm mt-3">
                                             Copy Referal Link
                                         </button>
 
 
 
-                                        <!-- <div class="tooltip btn btn-danger btn-sm mt-3"">
-													<button class onclick="myFunction()" onmouseout="outFunc()">
-														<span class="tooltiptext" id="myTooltip">
-															Copy to clipboard
-														</span>
-														Copy text
-													</button>
-												</div> -->
+
 
 
                                     </div>
                                 </div>
-                                <?php }?>
+
+                                <?php 
+                                }
+                                ?>
                             </div>
                         </div>
 
                         <?php 
-									}
-								?>
+						}
+						?>
 
                     </div>
 

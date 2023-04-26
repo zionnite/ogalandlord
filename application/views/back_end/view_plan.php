@@ -38,6 +38,10 @@
                         <!-- Free Tier -->
 
 
+                        <?php 
+						    $dis_isbank_verify 	= $this->Users_db->isBankVerify($user_id);
+							if($dis_isbank_verify){
+						?>
                         <div class="row col-md-12">
 
                             <?php
@@ -73,6 +77,16 @@
                             ?>
 
                         </div>
+                        <?php 
+                            }else{?>
+
+                        <div style="margin:0.2%;">
+                            <?php echo $this->Admin_db->alert_callbark('info','Your Bank Account is not yet verify!<br />You need to verify your account before you can subscribe to a plan');?>
+                        </div>
+                        <a href="<?php echo base_url();?>Profile/view_user/<?php echo $user_id;?>" id="verify"
+                            class="card-link"> Go to Profile and Verify your bank account detail</a>
+
+                        <?php }?>
 
 
 
